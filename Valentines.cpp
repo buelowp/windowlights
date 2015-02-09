@@ -1,17 +1,4 @@
-class Valentines {
-public:
-  Valentines(int);
-  ~Valentines();
-  
-  void seeTheRainbow();
-  void startup();
-  void action();
-  
-private:
-  Pixels<CRGB> *pixels;
-  int totalPixels;
-  int which;
-};
+#include "Valentines.h"
 
 Valentines::Valentines(int p)
 {

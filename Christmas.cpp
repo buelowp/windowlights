@@ -1,34 +1,4 @@
-HSVHue ColorWheel[] = {
-  HUE_RED,
-  HUE_YELLOW,
-  HUE_BLUE,
-  HUE_GREEN,
-  HUE_PURPLE,
-  HUE_ORANGE,
-};
-
-#define GOING_UP        0
-#define GOING_DOWN      1
-#define RETURN_TO_NORM  2
-
-class Winker {
-public:
-  Winker(int, int);
-  ~Winker();
-  
-  void startup();
-  void action();
-  void setFirstActive();
-  void addOne();
-  void seeTheRainbow();
-  
-private:
-  Pixels<CHSV> *pixels;
-  LedPixelMap *pixelMap;
-  int totalPixels;
-  int numActive;
-  int index;
-};
+#include "Christmas.h"
 
 Winker::Winker(int p, int a)
 {
@@ -39,13 +9,13 @@ Winker::Winker(int p, int a)
   int index = 0;
 }
 
-Winker::~Winker()
+Christmas::~Christmas()
 {
   delete pixels;
   delete pixelMap;
 }
 
-void Winker::Startup()
+void Christmas::Startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     CHSV c;
@@ -61,7 +31,7 @@ void Winker::Startup()
  * active pixels might be dynamic, but should grow to be about 20 - 25% of
  * all the pixels
  */
-void Winker::setFirstActive(int c)
+void Christmas::setFirstActive(int c)
 {
   int count = 0;
   bool found = false;
@@ -81,7 +51,7 @@ void Winker::setFirstActive(int c)
   }
 }
 
-void Winker::action()
+void Christmas::action()
 {
   for (int i = 0; i < pixelMap->size(); i++) {
     if (pixelMap[i] == NON_PIXEL)
@@ -126,7 +96,7 @@ void Winker::action()
   seeTheRainbow();
 }
 
-void Winker::addOne()
+void Christmas::addOne()
 {
   int pixel = random(0, TOTAL_PIXELS);
   bool added = false;
@@ -146,7 +116,7 @@ void Winker::addOne()
   }
 }
 
-CHSV Winker::getNextPixel()
+CHSV Christmas::getNextPixel()
 {
   if (index == pixels->size()) {
     CHSV a;
@@ -157,7 +127,7 @@ CHSV Winker::getNextPixel()
   return pixels[index++];
 }
 
-void Winker::seeTheRainbox()
+void Christmas::seeTheRainbox()
 {
   for (int i = 0; i < NUM_STRIPS; i++) {
     CHSV s[NUM_LEDS];

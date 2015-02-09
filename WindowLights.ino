@@ -3,6 +3,12 @@
 #include <mk20dx128.h>
 #include <pixelvector.h>
 
+#include "Christmas.h"
+#include "Halloween.h"
+#include "Valentines.h"
+#include "IndependenceDay.h"
+#include "SunPosition.h"
+
 #define SWITCH_PIN     2
 #define LED_STRIP_1    3
 #define LED_STRIP_2    4
