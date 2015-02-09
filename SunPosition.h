@@ -25,6 +25,8 @@
 #ifndef __SUNPOSITION_H__
 #define __SUNPOSITION_H__
 
+#include <math.h>
+
 class SunPosition {
 public:
   SunPosition();
@@ -32,9 +34,10 @@ public:
   ~SunPosition();
   
   void setPosition(double, double, int);
-  bool isSunset();
-  bool isSunrise();
+  bool isSunset(time_t);
+  bool isSunrise(time_t);
   void setTZOffset(int);
+  void setCurrentDate(int, int, int);
   
 private:
   double degToRad(double);
@@ -54,12 +57,12 @@ private:
   double calcJD(int,int,int);
   double calcJDFromJulianCent(double);
   double calcSunEqOfCenter(double);
-  double calcSunriseUTC(double, double, double);
-  double calcSunsetUTC(double, double, double);
+  double calcSunriseUTC();
+  double calcSunsetUTC();
   
   double latitude;
   double longitude;
-  int tzOffset;
+  double julianDate;
 };
 
 #endif
