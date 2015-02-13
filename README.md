@@ -13,4 +13,4 @@
 </ul>
 
 <h2>What does it do</h2>
-So, basically, we get our location and time from GPS. Using that, we can calculate what time it is, and when the sun will rise and set for the day. With the sunrise and sunset data, we can turn the program for a specific holiday on and off at reasonable times. Say 30 minutes before sunset until midnight. It's a no touch no thought solution. The next version will include a push button or two to allow for turning the lights on and off at any time of the day, and to cycle through the light show or possible turn on a generic light show for non holiday days. Don't know yet.
+So, basically, we get our location and time from GPS. Using that, we can calculate when the sun will rise and set for the day. With the sunrise and sunset data, we can turn the program for a specific holiday on and off at reasonable times. Say 30 minutes before sunset until midnight. It's a no touch no thought solution. The next version will include a push button or two to allow for turning the lights on and off at any time of the day, and to cycle through the light show or possible turn on a generic light show for non holiday days. Don't know yet.
