@@ -23,16 +23,23 @@
  */
 #include "Halloween.h"
 
+static CRGB HalloweenColorWheel[] = {
+  CRGB::Red,
+  CRGB::OrangeRed,
+  CRGB::Purple,
+  CRGB::Green,
+  CRGB::Blue,
+};
+
 Halloween::Halloween(int p)
 {
-  pixels = new Pixels<CRGB>(p);
+  pixels = Pixels<CRGB>(p);
   totalPixels = p;
   which = 0;
 }
 
 Halloween::~Halloween()
 {
-  delete pixels;
 }
 
 void Halloween::startup()
@@ -42,9 +49,9 @@ void Halloween::startup()
   
   for (int i = 0; i < totalPixels; i++) {
     if (i % 115) {
-      c = ColorWheel[window++];
+      c = HalloweenColorWheel[window++];
     }
-    pixels->push-back(c);
+    pixels.push_back(c);
   }
   seeTheRainbow();          
 }

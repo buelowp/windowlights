@@ -23,10 +23,19 @@
 **/
 #include "Christmas.h"
 
-Winker::Winker(int p, int a)
+static HSVHue ChristmasColorWheel[] = {
+  HUE_RED,
+  HUE_YELLOW,
+  HUE_BLUE,
+  HUE_GREEN,
+  HUE_PURPLE,
+  HUE_ORANGE,
+};
+
+Christmas::Christmas(int p, int a)
 {
-  pixels = new Pixels<CHSV>(p);
-  pixelMap = new LedPixelMap(a);
+  pixels = Pixels<CHSV>(p);
+  pixelMap.setMaxElements(a);
   totalPixels = p;
   numActive = a;
   int index = 0;
@@ -34,18 +43,16 @@ Winker::Winker(int p, int a)
 
 Christmas::~Christmas()
 {
-  delete pixels;
-  delete pixelMap;
 }
 
-void Christmas::Startup()
+void Christmas::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     CHSV c;
-    c.h = ColorWheel[random(0, NUM_COLORS)];
+    c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
     c.s = 255;
     c.v = NORMAL_BRIGHT;
-    pixels->push_back(c);
+    pixels.push_back(c);
   }
 }
 
@@ -67,7 +74,7 @@ void Christmas::setFirstActive(int c)
         break;
     }
     if (!found) {
-      pixelMap->pushBack(pixel, GOING_UP);
+      pixelMap.addNewPixel(pixel, GOING_UP);
       found = false;
       count++;
     }
@@ -76,17 +83,17 @@ void Christmas::setFirstActive(int c)
 
 void Christmas::action()
 {
-  for (int i = 0; i < pixelMap->size(); i++) {
+  for (int i = 0; i < pixelMap.size(); i++) {
     if (pixelMap[i] == NON_PIXEL)
       continue;
       
     CHSV pixel = pixels[pixelMap[i]];
     
-    switch (pixelMap->pixelDir(i)) {
+    switch (pixelMap.pixelDir(i)) {
     case GOING_UP:
       if (pixel.v == 254) {
         pixel.v = 255;
-        pixelMap->setPixelDir(i, GOING_DOWN);
+        pixelMap.setPixelDir(i, GOING_DOWN);
       }
       else {
         pixel.v += 2;
@@ -96,9 +103,9 @@ void Christmas::action()
     case GOING_DOWN:
       if (pixel.v == 1) {
         pixel.v = 0;
-        pixel.h = ColorWheel[random(0, NUM_COLORS)];
+        pixel.h = ChristmasColorWheel[random(0, NUM_COLORS)];
         pixel.s = 255;
-        pixelMap->setPixelDir(i, RETURN_TO_NORM);
+        pixelMap.setPixelDir(i, RETURN_TO_NORM);
       }
       else {
         pixel.v -= 2;
@@ -124,33 +131,33 @@ void Christmas::addOne()
   int pixel = random(0, TOTAL_PIXELS);
   bool added = false;
   
-  for (int i = 0; i < pixelMap->size(); i++) {
+  for (int i = 0; i < pixelMap.size(); i++) {
     if (pixelMap[i] == pixel)
       return;
   }
   for (int i = 0; i < NUM_ACTIVE; i++) {
     if (pixelMap[i] == NON_PIXEL) {
-      pixelMap->pushBack(pixel, GOING_UP);
+      pixelMap.addNewPixel(pixel, GOING_UP);
       return;
     }
   }
-  if (pixelMap->size() < NUM_ACTIVE) {
-    pixelMap->pushBack(pixel, GOING_UP);
+  if (pixelMap.size() < NUM_ACTIVE) {
+    pixelMap.addNewPixel(pixel, GOING_UP);
   }
 }
 
 CHSV Christmas::getNextPixel()
 {
-  if (index == pixels->size()) {
+  if (index == pixels.size()) {
     CHSV a;
-    memset(a, 0, sizeof(CHSV));
+    memset((void*)&a, 0, sizeof(CHSV));
     return a;
   }
   
   return pixels[index++];
 }
 
-void Christmas::seeTheRainbox()
+void Christmas::seeTheRainbow()
 {
   for (int i = 0; i < NUM_STRIPS; i++) {
     CHSV s[NUM_LEDS];

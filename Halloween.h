@@ -25,26 +25,19 @@
 #define __HALLOWEEN_H__
 
 #include "FastLED.h"
-
-CRGB ColorWheel[] = {
-  CRGB::Red,
-  CRGB::OrangeRed,
-  CRGB::Purple,
-  CRGB::Green,
-  CRGB::Blue,
-};
+#include "pixelvector.h"
 
 class Halloween {
 public:
   Halloween(int);
-  ~Haloween();
+  ~Halloween();
   
   void seeTheRainbow();
   void startup();
   void action();
   
 private:
-  Pixels<CRGB> *pixels;
+  Pixels<CRGB> pixels;
   int which;
   int totalPixels;
 };

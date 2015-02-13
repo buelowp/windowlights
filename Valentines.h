@@ -25,6 +25,8 @@
 #define __VALENTINES_H__
 
 #include "FastLED.h"
+#include "pixelvector.h"
+#include "lightstypes.h"
 
 class Valentines {
 public:
@@ -36,7 +38,7 @@ public:
   void action();
   
 private:
-  Pixels<CRGB> *pixels;
+  Pixels<CRGB> pixels;
   int totalPixels;
   int which;
 };

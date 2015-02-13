@@ -1,5 +1,5 @@
 /*
-    This file is part of WindowLights.
+    This file is part of SunPostion.
 
     SunPosition is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,28 +12,39 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-    
+    along with SunPosition.  If not, see <http://www.gnu.org/licenses/>.
+
     This implementation is taken and modified from Mike Chirico at
     http://souptonuts.sourceforge.net/code/sunrise.c.html
-    
+
     Modifications done have been in the spirit of the GPL, and
     any copying or reuse of this header and class are subject to
     the GPL v2 or any later GPL at the users discretion.
-    All thanks for this work go to Mike who made it pretty easy.
+    All thanks for the original work go to Mike who made it pretty easy.
 */
+
+#include <stdio.h>
 #include "SunPosition.h"
 
-SunPostion::SunPosition()
+SunPosition::SunPosition()
 {
   latitude = 0.0;
   longitude = 0.0;
+  julianDate = 0.0;
+  tzOffset = 0;
 }
 
-SunPosition::SunPosition(double lat, double lon)
+SunPosition::SunPosition(double lat, double lon, int tz)
 {
   latitude = lat;
   longitude = lon;
+  julianDate = 0.0;
+  tzOffset = tz;
+}
+
+SunPosition::~SunPosition()
+{
+
 }
 
 double SunPosition::degToRad(double angleDeg)
@@ -57,15 +68,15 @@ double SunPosition::calcMeanObliquityOfEcliptic(double t)
 double SunPosition::calcGeomMeanLongSun(double t)
 {
   double L = 280.46646 + t * (36000.76983 + 0.0003032 * t);
-  
+
   while ((int) L > 360) {
     L -= 360.0;
   }
-  
+
   while (L <  0) {
     L += 360.0;
   }
-  
+
   return L;              // in degrees
 }
 
@@ -92,14 +103,14 @@ double SunPosition::calcGeomMeanAnomalySun(double t)
 
 double SunPosition::calcEquationOfTime(double t)
 {
-  double epsilon = calcObliquityCorrection(t);               
+  double epsilon = calcObliquityCorrection(t);
   double l0 = calcGeomMeanLongSun(t);
   double e = calcEccentricityEarthOrbit(t);
   double m = calcGeomMeanAnomalySun(t);
   double y = tan(degToRad(epsilon)/2.0);
-  
+
   y *= y;
-  
+
   double sin2l0 = sin(2.0 * degToRad(l0));
   double sinm   = sin(degToRad(m));
   double cos2l0 = cos(2.0 * degToRad(l0));
@@ -188,7 +199,7 @@ double SunPosition::calcSunEqOfCenter(double t)
   double sin2m = sin(mrad+mrad);
   double sin3m = sin(mrad+mrad+mrad);
   double C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289;
-		
+
   return C;		// in degrees
 }
 
@@ -200,19 +211,44 @@ double SunPosition::calcSunriseUTC()
   double  solarDec = calcSunDeclination(t);
   double  hourAngle = calcHourAngleSunrise(latitude, solarDec);
   double  delta = longitude - radToDeg(hourAngle);
-  double  timeDiff = 4 * delta;	// in minutes of time	
-  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes	
-  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0); 
+  double  timeDiff = 4 * delta;	// in minutes of time
+  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes
+  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0);
 
   eqTime = calcEquationOfTime(newt);
   solarDec = calcSunDeclination(newt);
-		
+
   hourAngle = calcHourAngleSunrise(latitude, solarDec);
   delta = longitude - radToDeg(hourAngle);
   timeDiff = 4 * delta;
   timeUTC = 720 + timeDiff - eqTime; // in minutes
 
   return timeUTC;
+}
+
+double SunPosition::calcSunrise()
+{
+  double t = calcTimeJulianCent(julianDate);
+  // *** First pass to approximate sunrise
+  double  eqTime = calcEquationOfTime(t);
+  double  solarDec = calcSunDeclination(t);
+  double  hourAngle = calcHourAngleSunrise(latitude, solarDec);
+  double  delta = longitude - radToDeg(hourAngle);
+  double  timeDiff = 4 * delta;	// in minutes of time
+  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes
+  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0);
+
+  eqTime = calcEquationOfTime(newt);
+  solarDec = calcSunDeclination(newt);
+
+  hourAngle = calcHourAngleSunrise(latitude, solarDec);
+  delta = longitude - radToDeg(hourAngle);
+  timeDiff = 4 * delta;
+  timeUTC = 720 + timeDiff - eqTime; // in minutes
+
+  double localTime = timeUTC + (60 * tzOffset) -  (isDST * 60);
+
+  return localTime;	// return time in minutes from midnight
 }
 
 double SunPosition::calcSunsetUTC()
@@ -223,39 +259,85 @@ double SunPosition::calcSunsetUTC()
   double  solarDec = calcSunDeclination(t);
   double  hourAngle = calcHourAngleSunset(latitude, solarDec);
   double  delta = longitude - radToDeg(hourAngle);
-  double  timeDiff = 4 * delta;	// in minutes of time	
-  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes	
-  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0); 
+  double  timeDiff = 4 * delta;	// in minutes of time
+  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes
+  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0);
 
   eqTime = calcEquationOfTime(newt);
   solarDec = calcSunDeclination(newt);
-		
+
   hourAngle = calcHourAngleSunset(latitude, solarDec);
   delta = longitude - radToDeg(hourAngle);
   timeDiff = 4 * delta;
   timeUTC = 720 + timeDiff - eqTime; // in minutes
 
-  return timeUTC;
+  return timeUTC;	// return time in minutes from midnight
 }
 
-void SunPosition::setCurrentDate(int y, int m, int d)
+double SunPosition::calcSunset()
 {
-  julianDate = calJD(y, m, d);
+  double t = calcTimeJulianCent(julianDate);
+  // *** First pass to approximate sunset
+  double  eqTime = calcEquationOfTime(t);
+  double  solarDec = calcSunDeclination(t);
+  double  hourAngle = calcHourAngleSunset(latitude, solarDec);
+  double  delta = longitude - radToDeg(hourAngle);
+  double  timeDiff = 4 * delta;	// in minutes of time
+  double  timeUTC = 720 + timeDiff - eqTime;	// in minutes
+  double  newt = calcTimeJulianCent(calcJDFromJulianCent(t) + timeUTC/1440.0);
+
+  eqTime = calcEquationOfTime(newt);
+  solarDec = calcSunDeclination(newt);
+
+  hourAngle = calcHourAngleSunset(latitude, solarDec);
+  delta = longitude - radToDeg(hourAngle);
+  timeDiff = 4 * delta;
+  timeUTC = 720 + timeDiff - eqTime; // in minutes
+  double localTime = timeUTC + (60 * tzOffset) - (isDST * 60);
+
+  return localTime;	// return time in minutes from midnight
 }
 
-void SunPosition::isSunset(time_t timeNow)
+double SunPosition::setCurrentDate(int y, int m, int d)
 {
-  if ((time_t)calcSunsetUTC() <= timeNow)
-    return true;
-    
-  return false;
+	julianDate = calcJD(y, m, d);
+	return julianDate;
 }
 
-void SunPosition::isSunrise(time_t timeNow)
+bool SunPosition::isSunset(double m)
 {
-  if ((time_t)calcSunriseUTC() <= timeNow)
-    return true;
-    
-  return false;
+	if (calcSunset() <= m)
+		return true;
+
+	return false;
 }
 
+bool SunPosition::isSunrise(double m)
+{
+	if (calcSunrise() <= m)
+		return true;
+
+	return false;
+}
+
+void SunPosition::setTZOffset(int tz)
+{
+	tzOffset = tz;
+}
+
+void SunPosition::enableDST()
+{
+	isDST = 1;
+}
+
+void SunPosition::disableDST()
+{
+	isDST = 0;
+}
+
+void SunPosition::setPosition(double lat, double lng, int tz)
+{
+  latitude = lat;
+  longitude = lng;
+  tzOffset = tz;  
+}

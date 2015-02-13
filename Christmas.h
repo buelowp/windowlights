@@ -25,15 +25,10 @@
 #define __CHRISTMAS_H__
 
 #include "FastLED.h"
+#include "pixelvector.h"
+#include "LightsTypes.h"
 
-HSVHue ColorWheel[] = {
-  HUE_RED,
-  HUE_YELLOW,
-  HUE_BLUE,
-  HUE_GREEN,
-  HUE_PURPLE,
-  HUE_ORANGE,
-};
+using namespace std;
 
 #define GOING_UP        0
 #define GOING_DOWN      1
@@ -46,15 +41,14 @@ public:
   
   void startup();
   void action();
-  void setFirstActive();
+  void setFirstActive(int);
   void addOne();
   void seeTheRainbow();
-  
-  int 
+  CHSV getNextPixel();
   
 private:
-  Pixels<CHSV> *pixels;
-  LedPixelMap *pixelMap;
+  Pixels<CHSV> pixels;
+  LedPixelMap pixelMap;
   int totalPixels;
   int numActive;
   int index;

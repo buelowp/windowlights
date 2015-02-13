@@ -22,10 +22,10 @@
  *THE SOFTWARE.
 **/
 
-#include <Adafruit_GPS.h>
+#include <TinyGPS++.h>
 #include <FastLED.h>
-#include <pixelvector.h>
-#include <Time.h>
+#include "pixelvector.h"
+#include "LightsTypes.h"
 
 #include "Christmas.h"
 #include "Halloween.h"
@@ -33,39 +33,24 @@
 #include "IndependenceDay.h"
 #include "SunPosition.h"
 
-#define SWITCH_PIN     2
-#define LED_STRIP_1    3
-#define LED_STRIP_2    4
-#define LED_STRIP_3    5
-#define LED_STRIP_4    6
-#define GPS_RX_PIN     7
-
-#define NUM_LEDS        115
-#define NUM_STRIPS      4
-#define NUM_ACTIVE      60
-#define NORMAL_BRIGHT   100
-#define NUM_COLORS      6
-#define TOTAL_PIXELS    (NUM_LEDS * NUM_STRIPS)
-#define NON_PIXEL       -1
-
-#define CHRISTMAS      100
-#define HALLOWEEN      101
-#define THANKSGIVING   102
-#define VALENTINES     103
-#define MEMORIAL       104
-#define INDEPENDENCE   105
-#define NOHOLIDAY      999
+#define PIN1    5
+#define PIN2    7
+#define PIN3    9
+#define PIN4    11
 
 bool runAnyway;
-CRGB strip[NUM_STRIPS][NUM_LEDS];
 double latitude;
 double longitude;
+TinyGPSPlus gps;
+HardwareSerial Uart = HardwareSerial();
+SunPosition sun;
 
 void setup()
 {
   runAnyway = false;
   pinMode(SWITCH_PIN, INPUT);
   attachInterrupt(SWITCH_PIN, isrService, FALLING);
+  Uart.begin(9600);
   
   delay(3000);
   FastLED.addLeds<NEOPIXEL, PIN1>(strip[0], NUM_LEDS);
@@ -73,6 +58,29 @@ void setup()
   FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN4>(strip[3], NUM_LEDS);
   randomSeed(analogRead(0));
+}
+
+bool validRunTime()
+{
+  double sunrise = sun.calcSunrise();
+  double sunset = sun.calcSunset();
+  double minsPastMidnight = gps.time.hour() * 60 + gps.time.minute();
+  
+  if ((minsPastMidnight >= (sunrise - 60)) || (minsPastMidnight <= (sunrise + 30))) {
+    return true;
+  }
+  if ((minsPastMidnight >= (sunset - 30)) || gps.time.hour() != 0) {
+    return true;
+  }
+  
+  return false;
+}
+
+int getGPSData()
+{
+  while (Uart.available() > 0) {
+    gps.encode(Uart.read());
+  }
 }
 
 void isrService()
@@ -94,20 +102,24 @@ void pixelShutdown()
 
 void runChristmas()
 {
-  Winker wink(TOTAL_PIXELS, NUM_ACTIVE);
+  Christmas wink(TOTAL_PIXELS, NUM_ACTIVE);
   int buff = 0;
   
+  sun.disableDST();
+  
   wink.startup();
-  wink.setFistActive();
+  wink.setFirstActive(30);
   wink.seeTheRainbow();
   
-  while (whatTimeIsIt() == CHRISTMAS) {
+  while (validRunTime()) {
     if (buff++ == 20) {
       buff = 0;
       wink.addOne();
     }
     wink.action();
-    delay(25);
+    elapsedMillis milliIn;
+    getGPSData();
+    delay(25 - milliIn);
   }
   pixelShutdown();
 }
@@ -117,9 +129,13 @@ void runValentines()
   Valentines vday(TOTAL_PIXELS);
   vday.startup();
   
-  while (whatTimeIsIt() == VALENTINES) {
+  sun.disableDST();
+  
+  while (validRunTime()) {
     vday.action();
-    delay(500);
+    elapsedMillis milliIn;
+    getGPSData();
+    delay(500 - milliIn);
   }
   pixelShutdown();
 }
@@ -129,9 +145,13 @@ void runIndependence()
   Independence iday(TOTAL_PIXELS);
   iday.startup();
   
-  while (whatTimeIsit() == INDEPENDENCE) {
+  sun.enableDST();
+  
+  while (validRunTime()) {
     iday.action();
-    delay(500);
+    elapsedMillis milliIn;
+    getGPSData();
+    delay(500 - milliIn);
   }
   pixelShutdown();
 }
@@ -139,20 +159,21 @@ void runIndependence()
 void runHalloween()
 {
   Halloween hday(TOTAL_PIXELS);
-  hday.startup;
+  hday.startup();
   
-  while (whatTimeIsIt() == HALLOWEEN) {
+  sun.enableDST();
+  
+  while (validRunTime()) {
     hday.action();
-    delay(500);
+    elapsedMillis milliIn;
+    getGPSData();
+    delay(500 - milliIn);
   }
   pixelShutdown();
 }
 
-void programOnDeck()
+int programOnDeck(int m, int d)
 {
-  int m = gpsGetCurrentMonth();
-  int d = gpsGetCurrentDay();
-  
   if ((m == 12) && (d > 11)) {
     return CHRISTMAS;
   }
@@ -165,50 +186,42 @@ void programOnDeck()
   if ((m == 10) && (d > 24)) {
     return HALLOWEEN;
   }
-  if (m == 11) {
-    if (d < 2) {
-      return HALLOWEEN;
-    }
-    if (d > 20) {
-      return THANKSGIVING;
-    }
+  if (m == 11 && d > 20) {
+    return THANKSGIVING;
   }
-  if ((m == 5) && (d == 25) {
+  if ((m == 5) && (d == 25)) {
     return MEMORIAL;
   }
   return NOHOLIDAY;
 }
 
-void whatTimeIsIt()
-{
-  time_t timeNow;
-  SunPosition sun(latitude, longitude);
-  
-  sun.setCurrentDate();
-  timeNow = gpsGetCurrentTime();
-  if (sun.isSunset(timeNow)) {
-    return programOnDeck();
-  }
-}
-
 void loop()
 {
-  switch (whatTimeIsIt()) {
-    case CHRISTMAS:
-      runChristmas();
-      break;
-    case VALENTINES:
-      runValentines();
-      break;
-    case MEMORIAL:
-    case INDEPENDENCE:
-      runIndependence();
-      break;
-    case HALLOWEEN:
-      runHalloween();
-      break;
-    case THANKSGIVING:
-    default:
-      delay(60000);
+  int bytes = 0;
+
+  bytes = getGPSData();
+  
+  if (gps.location.isValid()) {
+    sun.setPosition(gps.location.lat(), gps.location.lng(), -6);
+    sun.setCurrentDate(gps.date.year() + 2000, gps.date.month(), gps.date.day());
+    
+    switch (programOnDeck(gps.date.month(), gps.date.day())) {
+      case CHRISTMAS:
+        runChristmas();
+        break;
+      case VALENTINES:
+        runValentines();
+        break;
+      case MEMORIAL:
+      case INDEPENDENCE:
+        runIndependence();
+        break;
+      case HALLOWEEN:
+        runHalloween();
+        break;
+      case THANKSGIVING:
+      default:
+        delay(1000);
+    }
   }
 }

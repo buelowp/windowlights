@@ -1,5 +1,5 @@
 /*
-    This file is part of WindowLights.
+    This file is part of SunPosition
 
     SunPosition is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,33 +12,40 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-    
+    along with SunPosition.  If not, see <http://www.gnu.org/licenses/>.
+
     This implementation is taken and modified from Mike Chirico at
     http://souptonuts.sourceforge.net/code/sunrise.c.html
-    
+
     Modifications done have been in the spirit of the GPL, and
     any copying or reuse of this header and class are subject to
     the GPL v2 or any later GPL at the users discretion.
-    All thanks for this work go to Mike who made it pretty easy.
+    All thanks for the original work go to Mike who made it pretty easy.
 */
 #ifndef __SUNPOSITION_H__
 #define __SUNPOSITION_H__
 
 #include <math.h>
+#include <time.h>
 
 class SunPosition {
 public:
   SunPosition();
   SunPosition(double, double, int);
   ~SunPosition();
-  
+
   void setPosition(double, double, int);
-  bool isSunset(time_t);
-  bool isSunrise(time_t);
+  bool isSunset(double);
+  bool isSunrise(double);
   void setTZOffset(int);
-  void setCurrentDate(int, int, int);
-  
+  double setCurrentDate(int, int, int);
+  void enableDST();
+  void disableDST();
+  double calcSunriseUTC();
+  double calcSunsetUTC();
+  double calcSunrise();
+  double calcSunset();
+
 private:
   double degToRad(double);
   double radToDeg(double);
@@ -57,12 +64,12 @@ private:
   double calcJD(int,int,int);
   double calcJDFromJulianCent(double);
   double calcSunEqOfCenter(double);
-  double calcSunriseUTC();
-  double calcSunsetUTC();
-  
+
   double latitude;
   double longitude;
   double julianDate;
+  int tzOffset;
+  int isDST;
 };
 
 #endif

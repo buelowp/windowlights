@@ -25,22 +25,27 @@
 
 Valentines::Valentines(int p)
 {
-  pixels = new Pixels<CRGB>(p);
+  pixels = Pixels<CRGB>(p);
   totalPixels = p;
   which = 0;
+}
+
+Valentines::~Valentines()
+{
 }
 
 void Valentines::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == 0) {
-      pixels->push_back(CRGB::Red);
+      pixels.push_back(CRGB::Red);
     }
     else {
-      pixels->push_back(CRGB::White);
+      pixels.push_back(CRGB::White);
     }
     seeTheRainbow();
     which = 1;
+  }
 }
 
 void Valentines::action()
