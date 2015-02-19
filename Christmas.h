@@ -47,7 +47,7 @@ public:
   CHSV getNextPixel();
   
 private:
-  Pixels<CHSV> pixels;
+  vector<CHSV> pixels;
   LedPixelMap pixelMap;
   int totalPixels;
   int numActive;

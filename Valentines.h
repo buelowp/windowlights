@@ -38,7 +38,7 @@ public:
   void action();
   
 private:
-  Pixels<CRGB> pixels;
+  vector<CRGB> pixels;
   int totalPixels;
   int which;
 };

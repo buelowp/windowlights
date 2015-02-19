@@ -34,7 +34,6 @@ static HSVHue ChristmasColorWheel[] = {
 
 Christmas::Christmas(int p, int a)
 {
-  pixels = Pixels<CHSV>(p);
   pixelMap.setMaxElements(a);
   totalPixels = p;
   numActive = a;

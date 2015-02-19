@@ -38,6 +38,7 @@
 #define PIN3    9
 #define PIN4    11
 
+CRGB strip[NUM_STRIPS][NUM_LEDS];
 bool runAnyway;
 double latitude;
 double longitude;
@@ -76,7 +77,7 @@ bool validRunTime()
   return false;
 }
 
-int getGPSData()
+void getGPSData()
 {
   while (Uart.available() > 0) {
     gps.encode(Uart.read());
@@ -197,9 +198,7 @@ int programOnDeck(int m, int d)
 
 void loop()
 {
-  int bytes = 0;
-
-  bytes = getGPSData();
+  getGPSData();
   
   if (gps.location.isValid()) {
     sun.setPosition(gps.location.lat(), gps.location.lng(), -6);

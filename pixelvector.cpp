@@ -1,33 +1,5 @@
 #include "pixelvector.h"
 
-template <class T> Pixels<T>::Pixels(int m)
-{
-  numelements = 0;
-  maxelements = m;
-  pixel = new T[m];
-}
-
-template <class T> Pixels<T>::~Pixels()
-{
-  delete[] pixel;
-}
-
-template <class T> int Pixels<T>::push_back(T element)
-{
-  if (numelements < maxelements) {
-    pixel[numelements] = element;
-    return ++numelements;
-  }
-  return -1;
-}
-
-template <class T> void Pixels<T>::set(T element, int index)
-{
-  if (index < maxelements) {
-    pixel[index] = element;
-  }
-}
-
 LedPixelMap::LedPixelMap()
 {
   maxelements = 0;

@@ -1,6 +1,10 @@
 #ifndef __LIGHTSTYPES_H__
 #define __LIGHTSTYPES_H__
 
+#include <vector>
+
+using namespace std;
+
 #define SWITCH_PIN     2
 #define LED_STRIP_1    3
 #define LED_STRIP_2    4

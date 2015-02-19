@@ -33,7 +33,6 @@ static CRGB HalloweenColorWheel[] = {
 
 Halloween::Halloween(int p)
 {
-  pixels = Pixels<CRGB>(p);
   totalPixels = p;
   which = 0;
 }
