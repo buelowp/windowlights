@@ -24,6 +24,7 @@
 
 #include <TinyGPS++.h>
 #include <FastLED.h>
+#include <Time.h>
 #include "pixelvector.h"
 #include "LightsTypes.h"
 
@@ -31,6 +32,7 @@
 #include "Halloween.h"
 #include "Valentines.h"
 #include "IndependenceDay.h"
+#include "Thanksgiving.h"
 #include "SunPosition.h"
 
 #define PIN1    5
@@ -40,11 +42,11 @@
 
 CRGB strip[NUM_STRIPS][NUM_LEDS];
 bool runAnyway;
-double latitude;
-double longitude;
 TinyGPSPlus gps;
 HardwareSerial Uart = HardwareSerial();
 SunPosition sun;
+
+const int tzOffset =- 5;
 
 void setup()
 {
@@ -77,7 +79,7 @@ bool validRunTime()
   return false;
 }
 
-void getGPSData()
+void runEncoder()
 {
   while (Uart.available() > 0) {
     gps.encode(Uart.read());
@@ -118,9 +120,10 @@ void runChristmas()
       wink.addOne();
     }
     wink.action();
-    elapsedMillis milliIn;
-    getGPSData();
-    delay(25 - milliIn);
+    elapsedMillis delta;
+    runEncoder();
+    if (delta <= 25)
+      delay(15 - delta);
   }
   pixelShutdown();
 }
@@ -134,9 +137,12 @@ void runValentines()
   
   while (validRunTime()) {
     vday.action();
-    elapsedMillis milliIn;
-    getGPSData();
-    delay(500 - milliIn);
+    elapsedMillis delta;
+    runEncoder();
+    if (delta >= 500)
+      delay(delta);
+    else
+      delay(500 - delta);
   }
   pixelShutdown();
 }
@@ -150,9 +156,12 @@ void runIndependence()
   
   while (validRunTime()) {
     iday.action();
-    elapsedMillis milliIn;
-    getGPSData();
-    delay(500 - milliIn);
+    elapsedMillis delta;
+    runEncoder();
+    if (delta >= 500)
+      delay(delta);
+    else
+      delay(500 - delta);
   }
   pixelShutdown();
 }
@@ -166,9 +175,31 @@ void runHalloween()
   
   while (validRunTime()) {
     hday.action();
-    elapsedMillis milliIn;
-    getGPSData();
-    delay(500 - milliIn);
+    elapsedMillis delta;
+    runEncoder();
+    if (delta >= 500)
+      delay(delta);
+    else
+      delay(500 - delta);
+  }
+  pixelShutdown();
+}
+
+void runThanksgiving()
+{
+  Thanksgiving tday(TOTAL_PIXELS);
+  tday.startup();
+  
+  sun.enableDST();
+  
+  while (validRunTime()) {
+    tday.action();
+    elapsedMillis delta;
+    runEncoder();
+    if (delta >= 500)
+      delay(delta);
+    else
+      delay(500 - delta);
   }
   pixelShutdown();
 }
@@ -196,14 +227,23 @@ int programOnDeck(int m, int d)
   return NOHOLIDAY;
 }
 
+void setGPSData()
+{
+  setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
+  adjustTime(tzOffset * SECS_PER_HOUR);
+  sun.setPosition(gps.location.lat(), gps.location.lng(), tzOffset);
+}
+
 void loop()
 {
-  getGPSData();
+  unsigned long fixAge;
+
+  runEncoder();
+
+  fixAge = gps.location.age();
+  if (fixAge < 1500) {
+    setGPSData();
   
-  if (gps.location.isValid()) {
-    sun.setPosition(gps.location.lat(), gps.location.lng(), -6);
-    sun.setCurrentDate(gps.date.year() + 2000, gps.date.month(), gps.date.day());
-    
     switch (programOnDeck(gps.date.month(), gps.date.day())) {
       case CHRISTMAS:
         runChristmas();
@@ -219,8 +259,10 @@ void loop()
         runHalloween();
         break;
       case THANKSGIVING:
+        runThanksgiving();
+        break;
       default:
-        delay(1000);
+        delay(500);
     }
   }
 }

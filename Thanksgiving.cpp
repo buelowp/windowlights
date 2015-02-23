@@ -20,36 +20,48 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *THE SOFTWARE.
-**/
+ */
+#include "Thanksgiving.h"
 
-#ifndef __LEDPIXELMAP_H__
-#define __LEDPIXELMAP_H__
-
-#include <vector>
-
-using namespace std;
-
-class LedPixelMap {
-public:
-  LedPixelMap(int m);
-  LedPixelMap();
-  ~LedPixelMap();
-
-  int size() { return pixel.size(); }
-  int pixelDir(int i) { return dir[i]; }
-  inline int operator[](int i) { return pixel[i]; }
-  void setPixelDir(int i, int d);
-  void setPixel(int i, int p);
-  void removePixel(int p);
-  int addNewPixel(int p, int d);
-  void setMaxElements(int m) { maxelements = m; }
-
-private:
-  int maxelements;
-  vector<int> pixel;
-  vector<int> dir;
+static CRGB ThanksgivingColorWheel[] = {
+  CRGB::Red,
+  CRGB::OrangeRed,
+  CRGB::Purple,
+  CRGB::Green,
+  CRGB::Blue,
+  CRGB::Yellow,
+  CRGB::White,
 };
 
+Thanksgiving::Thanksgiving(int p)
+{
+  totalPixels = p;
+  which = 0;
+}
 
-#endif
+Thanksgiving::~Thanksgiving()
+{
+}
+
+void Thanksgiving::startup()
+{
+  int window = 1;
+  CRGB c;
+  
+  for (int i = 0; i < totalPixels; i++) {
+    if (i % 115) {
+      c = ThanksgivingColorWheel[window++];
+    }
+    pixels.push_back(c);
+  }
+  seeTheRainbow();          
+}
+
+void Thanksgiving::action()
+{
+}
+
+void Thanksgiving::seeTheRainbow()
+{
+}
 
