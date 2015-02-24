@@ -37,7 +37,7 @@ Christmas::Christmas(int p, int a)
   pixelMap.setMaxElements(a);
   totalPixels = p;
   numActive = a;
-  int index = 0;
+  index = 0;
 }
 
 Christmas::~Christmas()
@@ -114,11 +114,13 @@ void Christmas::action()
     case RETURN_TO_NORM:
       if (pixel.v == (NORMAL_BRIGHT - 1)) {
         pixel.v = NORMAL_BRIGHT;
+        pixels[pixelMap[i]] = pixel;
+        pixelMap.removePixel(i);
       }
       else {
         pixel.v += 2;
+        pixels[pixelMap[i]] = pixel;
       }
-      pixels[pixelMap[i]] = pixel;
       break;
     }    
   }
@@ -128,23 +130,16 @@ void Christmas::action()
 void Christmas::addOne()
 {
   int pixel = random(0, TOTAL_PIXELS);
-  bool added = false;
   
   for (int i = 0; i < pixelMap.size(); i++) {
     if (pixelMap[i] == pixel)
       return;
   }
-  for (int i = 0; i < NUM_ACTIVE; i++) {
-    if (pixelMap[i] == NON_PIXEL) {
-      pixelMap.addNewPixel(pixel, GOING_UP);
-      return;
-    }
-  }
   if (pixelMap.size() < NUM_ACTIVE) {
     pixelMap.addNewPixel(pixel, GOING_UP);
   }
 }
-
+/*
 CHSV Christmas::getNextPixel()
 {
   if (index == pixels.size()) {
@@ -155,7 +150,7 @@ CHSV Christmas::getNextPixel()
   
   return pixels[index++];
 }
-
+*/
 void Christmas::seeTheRainbow()
 {
   for (int i = 0; i < NUM_STRIPS; i++) {

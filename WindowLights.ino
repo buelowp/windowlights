@@ -108,6 +108,7 @@ void runChristmas()
   Christmas wink(TOTAL_PIXELS, NUM_ACTIVE);
   int buff = 0;
   
+  Serial.println("Running Christmas");
   sun.disableDST();
   
   wink.startup();
@@ -242,6 +243,7 @@ void loop()
 
   fixAge = gps.location.age();
   if (fixAge < 1500) {
+    Serial.println("Valid fix detected");
     setGPSData();
   
     switch (programOnDeck(gps.date.month(), gps.date.day())) {
@@ -264,5 +266,9 @@ void loop()
       default:
         delay(500);
     }
+  }
+  else {
+    Serial.println("No valid fix detected");
+    delay(500);
   }
 }
