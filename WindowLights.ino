@@ -45,6 +45,8 @@ bool runAnyway;
 TinyGPSPlus gps;
 HardwareSerial Uart = HardwareSerial();
 SunPosition sun;
+int bounce;
+bool runDefault;
 
 const int tzOffset =- 5;
 
@@ -61,13 +63,75 @@ void setup()
   FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN4>(strip[3], NUM_LEDS);
   randomSeed(analogRead(0));
+  bounce = 0;
+  runDefault = false;
+}
+
+int getDOW()
+{
+  int A = 0;
+  int B = day();
+  int C = 0;
+  int D = 0;
+  int W = 0;
+  int X = 0;
+  int Y = 0;
+  int Z = 0;
+  int R = 0;
+  int newYear = 0;
+  
+  if (month() < 3) {
+    A = month() + 10;
+    newYear = year() - 1;
+  }
+  else {
+    A = month() - 2;
+    newYear = year();
+  }
+  C = newYear % 100;
+  D = newYear / 100;
+  W = (13 * A - 1) / 5;
+  X = C / 4;
+  Y = D / 4;
+  Z = W + X + Y + B + C - 2 * D;
+  R = Z % 7;
+  if (R < 0)
+    R+=7;
+    
+  return R;
+}
+
+void setDST()
+{
+  int dow = getDOW();
+  
+  if (month() == 3) {
+    if (day() >= 7 && day() < 14) {
+      if (dow == 0)
+        tzOffset = -6;
+    }
+  }
+  if (month() == 11) {
+    if (day() <= 7) {
+      if (dow == 0)
+        tzOffset = -5;
+    }
+  }
+}
+
+bool runToMidnight()
+{
+  if (gps.time.hour() == 0)
+    return true;
+    
+  return false;
 }
 
 bool validRunTime()
 {
   double sunrise = sun.calcSunrise();
   double sunset = sun.calcSunset();
-  double minsPastMidnight = gps.time.hour() * 60 + gps.time.minute();
+  double minsPastMidnight = hour() * 60 + minute();
   
   if ((minsPastMidnight >= (sunrise - 60)) || (minsPastMidnight <= (sunrise + 30))) {
     return true;
@@ -90,7 +154,13 @@ void isrService()
 {
   __disable_irq();
   runAnyway = true;
-  __enable_irq();
+  if ((millis() - bounce) < 1000) {
+    runDefault = true;
+  }
+  else {
+    bounce = millis();
+  }
+  __enable_irq();    
 }
 
 void pixelShutdown()
@@ -109,7 +179,7 @@ void runChristmas()
   int buff = 0;
   
   Serial.println("Running Christmas");
-  sun.disableDST();
+  sun.setTZOffset(tzOffset);
   
   wink.startup();
   wink.setFirstActive(30);
@@ -124,7 +194,7 @@ void runChristmas()
     elapsedMillis delta;
     runEncoder();
     if (delta <= 25)
-      delay(15 - delta);
+      delay(25 - delta);
   }
   pixelShutdown();
 }
@@ -134,7 +204,7 @@ void runValentines()
   Valentines vday(TOTAL_PIXELS);
   vday.startup();
   
-  sun.disableDST();
+  sun.setTZOffset(tzOffset);
   
   while (validRunTime()) {
     vday.action();
@@ -153,7 +223,7 @@ void runIndependence()
   Independence iday(TOTAL_PIXELS);
   iday.startup();
   
-  sun.enableDST();
+  sun.setTZOffset(tzOffset);
   
   while (validRunTime()) {
     iday.action();
@@ -161,8 +231,9 @@ void runIndependence()
     runEncoder();
     if (delta >= 500)
       delay(delta);
-    else
+    else {
       delay(500 - delta);
+    }
   }
   pixelShutdown();
 }
@@ -172,7 +243,7 @@ void runHalloween()
   Halloween hday(TOTAL_PIXELS);
   hday.startup();
   
-  sun.enableDST();
+  sun.setTZOffset(tzOffset);
   
   while (validRunTime()) {
     hday.action();
@@ -191,7 +262,7 @@ void runThanksgiving()
   Thanksgiving tday(TOTAL_PIXELS);
   tday.startup();
   
-  sun.enableDST();
+  sun.setTZOffset(tzOffset);
   
   while (validRunTime()) {
     tday.action();
@@ -241,34 +312,38 @@ void loop()
 
   runEncoder();
 
-  fixAge = gps.location.age();
-  if (fixAge < 1500) {
-    Serial.println("Valid fix detected");
-    setGPSData();
-  
-    switch (programOnDeck(gps.date.month(), gps.date.day())) {
-      case CHRISTMAS:
-        runChristmas();
-        break;
-      case VALENTINES:
-        runValentines();
-        break;
-      case MEMORIAL:
-      case INDEPENDENCE:
-        runIndependence();
-        break;
-      case HALLOWEEN:
-        runHalloween();
-        break;
-      case THANKSGIVING:
-        runThanksgiving();
-        break;
-      default:
-        delay(500);
-    }
+  if (runDefault) {
+    
   }
   else {
-    Serial.println("No valid fix detected");
-    delay(500);
+    fixAge = gps.location.age();
+    if (fixAge < 1500) {
+      Serial.println("Valid fix detected");
+      setGPSData();
+    
+      switch (programOnDeck(gps.date.month(), gps.date.day())) {
+        case CHRISTMAS:
+          runChristmas();
+          break;
+        case VALENTINES:
+          runValentines();
+          break;
+        case MEMORIAL:
+        case INDEPENDENCE:
+          runIndependence();
+          break;
+        case HALLOWEEN:
+          runHalloween();
+          break;
+        case THANKSGIVING:
+          runThanksgiving();
+          break;
+        default:
+          delay(500);
+      }
+    }
+    else {
+      Serial.println("No valid fix detected");
+    }
   }
 }

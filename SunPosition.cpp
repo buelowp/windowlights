@@ -246,7 +246,7 @@ double SunPosition::calcSunrise()
   timeDiff = 4 * delta;
   timeUTC = 720 + timeDiff - eqTime; // in minutes
 
-  double localTime = timeUTC + (60 * tzOffset) -  (isDST * 60);
+  double localTime = timeUTC + (60 * tzOffset);
 
   return localTime;	// return time in minutes from midnight
 }
@@ -293,7 +293,7 @@ double SunPosition::calcSunset()
   delta = longitude - radToDeg(hourAngle);
   timeDiff = 4 * delta;
   timeUTC = 720 + timeDiff - eqTime; // in minutes
-  double localTime = timeUTC + (60 * tzOffset) - (isDST * 60);
+  double localTime = timeUTC + (60 * tzOffset);
 
   return localTime;	// return time in minutes from midnight
 }
@@ -323,16 +323,6 @@ bool SunPosition::isSunrise(double m)
 void SunPosition::setTZOffset(int tz)
 {
 	tzOffset = tz;
-}
-
-void SunPosition::enableDST()
-{
-	isDST = 1;
-}
-
-void SunPosition::disableDST()
-{
-	isDST = 0;
 }
 
 void SunPosition::setPosition(double lat, double lng, int tz)

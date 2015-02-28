@@ -39,8 +39,6 @@ public:
   bool isSunrise(double);
   void setTZOffset(int);
   double setCurrentDate(int, int, int);
-  void enableDST();
-  void disableDST();
   double calcSunriseUTC();
   double calcSunsetUTC();
   double calcSunrise();
@@ -69,7 +67,6 @@ private:
   double longitude;
   double julianDate;
   int tzOffset;
-  int isDST;
 };
 
 #endif
