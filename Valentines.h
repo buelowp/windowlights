@@ -26,7 +26,7 @@
 
 #include "FastLED.h"
 #include "pixelvector.h"
-#include "lightstypes.h"
+#include "WindowLights.h"
 
 class Valentines {
 public:

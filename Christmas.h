@@ -26,7 +26,7 @@
 
 #include "FastLED.h"
 #include "pixelvector.h"
-#include "LightsTypes.h"
+#include "WindowLights.h"
 
 using namespace std;
 

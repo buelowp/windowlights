@@ -22,11 +22,11 @@
  *THE SOFTWARE.
 **/
 
-#include <TinyGPS++.h>
+#include <TinyGPS.h>
 #include <FastLED.h>
 #include <Time.h>
 #include "pixelvector.h"
-#include "LightsTypes.h"
+#include "WindowLights.h"
 
 #include "Christmas.h"
 #include "Halloween.h"
@@ -41,18 +41,15 @@
 #define PIN4    11
 
 CRGB strip[NUM_STRIPS][NUM_LEDS];
-bool runAnyway;
-TinyGPSPlus gps;
+TinyGPS gps;
 HardwareSerial Uart = HardwareSerial();
 SunPosition sun;
 int bounce;
-bool runDefault;
-
-const int tzOffset =- 5;
+bool defaultProg;
+int tzOffset;
 
 void setup()
 {
-  runAnyway = false;
   pinMode(SWITCH_PIN, INPUT);
   attachInterrupt(SWITCH_PIN, isrService, FALLING);
   Uart.begin(9600);
@@ -64,13 +61,14 @@ void setup()
   FastLED.addLeds<NEOPIXEL, PIN4>(strip[3], NUM_LEDS);
   randomSeed(analogRead(0));
   bounce = 0;
-  runDefault = false;
+  defaultProg = false;
+  tzOffset = 0;
 }
 
-int getDOW()
+int getDOW(int m, int d)
 {
   int A = 0;
-  int B = day();
+  int B = d;
   int C = 0;
   int D = 0;
   int W = 0;
@@ -80,12 +78,12 @@ int getDOW()
   int R = 0;
   int newYear = 0;
   
-  if (month() < 3) {
-    A = month() + 10;
+  if (m < 3) {
+    A = m + 10;
     newYear = year() - 1;
   }
   else {
-    A = month() - 2;
+    A = m - 2;
     newYear = year();
   }
   C = newYear % 100;
@@ -101,30 +99,57 @@ int getDOW()
   return R;
 }
 
-void setDST()
-{
-  int dow = getDOW();
+int whichDay(int m, int DOW, int NthWeek){
+  int targetDate = 1;
+  int firstDOW = getDOW(m, targetDate);
   
-  if (month() == 3) {
-    if (day() >= 7 && day() < 14) {
-      if (dow == 0)
-        tzOffset = -6;
-    }
+  while (firstDOW != DOW){
+    firstDOW = (firstDOW+1)%7;
+    targetDate++;
   }
-  if (month() == 11) {
-    if (day() <= 7) {
-      if (dow == 0)
-        tzOffset = -5;
-    }
-  }
+  
+  //Adjust for weeks
+  targetDate += (NthWeek-1)*7;
+  return targetDate;
 }
 
-bool runToMidnight()
+void setDST()
 {
-  if (gps.time.hour() == 0)
-    return true;
-    
-  return false;
+  int springForward = whichDay(3, 0, 2);
+  int fallBack = whichDay(11, 0, 1);
+  Serial.print("Spring forward on day ");
+  Serial.println(springForward);
+  Serial.print("Fall back on day ");
+  Serial.println(fallBack);
+  
+  switch (month()) {
+    case 12:
+    case 1:
+    case 2:
+      tzOffset = -6;
+      break;
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+      tzOffset = -5;
+      break;
+    case 3:
+      if (day() >= springForward)
+        tzOffset = -5;
+      else
+        tzOffset = -6;
+      break;
+    case 11:
+      if (day() >= fallBack)
+        tzOffset = -6;
+      else
+        tzOffset = -5;
+      break;
+  }
 }
 
 bool validRunTime()
@@ -136,26 +161,19 @@ bool validRunTime()
   if ((minsPastMidnight >= (sunrise - 60)) || (minsPastMidnight <= (sunrise + 30))) {
     return true;
   }
-  if ((minsPastMidnight >= (sunset - 30)) || gps.time.hour() != 0) {
+  if ((minsPastMidnight >= (sunset - 30)) || hour() != 0) {
     return true;
   }
   
   return false;
 }
 
-void runEncoder()
-{
-  while (Uart.available() > 0) {
-    gps.encode(Uart.read());
-  }
-}
-
 void isrService()
 {
   __disable_irq();
-  runAnyway = true;
   if ((millis() - bounce) < 1000) {
-    runDefault = true;
+    defaultProg = true;
+    bounce = 0;
   }
   else {
     bounce = millis();
@@ -276,6 +294,24 @@ void runThanksgiving()
   pixelShutdown();
 }
 
+void runDefault()
+{
+  Independence iday(TOTAL_PIXELS);
+  iday.startup();
+  
+  while (hour() != 0) {
+    iday.action();
+    elapsedMillis delta;
+    runEncoder();
+    if (delta >= 500)
+      delay(delta);
+    else {
+      delay(500 - delta);
+    }
+  }
+  pixelShutdown();
+}
+
 int programOnDeck(int m, int d)
 {
   if ((m == 12) && (d > 11)) {
@@ -299,29 +335,42 @@ int programOnDeck(int m, int d)
   return NOHOLIDAY;
 }
 
-void setGPSData()
+unsigned long runEncoder()
 {
-  setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
-  adjustTime(tzOffset * SECS_PER_HOUR);
-  sun.setPosition(gps.location.lat(), gps.location.lng(), tzOffset);
+  unsigned long age;
+  int Year;
+  byte Month, Day, Hour, Minute, Second;
+  long latitude, longitude;
+  
+  while (Uart.available() > 0) {
+    gps.encode(Uart.read());
+    gps.crack_datetime(&Year, &Month, &Day, &Hour, &Minute, &Second, NULL, &age);
+    if (age < 500) {
+      gps.get_position(&latitude, &longitude);
+      setTime(Hour, Minute, Second, Day, Month, Year);
+      adjustTime(tzOffset * SECS_PER_HOUR);
+      sun.setPosition(latitude, longitude, tzOffset);
+    }
+  }
+  return age;
+  
+  void get_position(long *latitude, long *longitude, unsigned long *fix_age = 0);
 }
 
 void loop()
 {
   unsigned long fixAge;
 
-  runEncoder();
+  fixAge = runEncoder();
 
   if (runDefault) {
-    
+    runDefault();
   }
   else {
-    fixAge = gps.location.age();
     if (fixAge < 1500) {
       Serial.println("Valid fix detected");
-      setGPSData();
     
-      switch (programOnDeck(gps.date.month(), gps.date.day())) {
+      switch (programOnDeck(month(), day())) {
         case CHRISTMAS:
           runChristmas();
           break;
@@ -341,9 +390,6 @@ void loop()
         default:
           delay(500);
       }
-    }
-    else {
-      Serial.println("No valid fix detected");
     }
   }
 }

@@ -26,6 +26,7 @@
 
 #include "FastLED.h"
 #include "pixelvector.h"
+#include "WindowLights.h"
 
 class Thanksgiving {
 public:
