@@ -117,10 +117,6 @@ void setDST()
 {
   int springForward = whichDay(3, 0, 2);
   int fallBack = whichDay(11, 0, 1);
-  Serial.print("Spring forward on day ");
-  Serial.println(springForward);
-  Serial.print("Fall back on day ");
-  Serial.println(fallBack);
   
   switch (month()) {
     case 12:
