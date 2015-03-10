@@ -41,7 +41,7 @@
 #define PIN4    11
 
 CRGB strip[NUM_STRIPS][NUM_LEDS];
-TinyGPS gps;
+TinyGPSPlus gps;
 HardwareSerial Uart = HardwareSerial();
 SunPosition sun;
 int bounce;

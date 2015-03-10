@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *THE SOFTWARE.
 **/
-#include "IndependenceDay.h"
+#include "Norah.h"
 
 static CRGB NorahColorWheel[] = {
   CRGB::Pink,
@@ -57,6 +57,7 @@ void Norah::startup()
         pixels.push_back(CRGB::Gold);
         break;
     }
+  }
     
   seeTheRainbow();
 }
