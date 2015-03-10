@@ -22,7 +22,7 @@
  *THE SOFTWARE.
 **/
 
-#include <TinyGPS.h>
+#include <TinyGPS++.h>
 #include <FastLED.h>
 #include <Time.h>
 #include "pixelvector.h"
@@ -331,33 +331,27 @@ int programOnDeck(int m, int d)
   return NOHOLIDAY;
 }
 
-unsigned long runEncoder()
+void runEncoder()
 {
-  unsigned long age;
-  int Year;
-  byte Month, Day, Hour, Minute, Second;
   long latitude, longitude;
   
-  while (Uart.available() > 0) {
-    gps.encode(Uart.read());
-    gps.crack_datetime(&Year, &Month, &Day, &Hour, &Minute, &Second, NULL, &age);
-    if (age < 500) {
-      gps.get_position(&latitude, &longitude);
-      setTime(Hour, Minute, Second, Day, Month, Year);
-      adjustTime(tzOffset * SECS_PER_HOUR);
-      sun.setPosition(latitude, longitude, tzOffset);
+  while (Serial1.available()) {
+    if (gps.encode(Serial1.read())) { // process gps messages
+      if (gps.time.isValid()) {
+        setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
+        setDST();
+        adjustTime(tzOffset * SECS_PER_HOUR);
+        sun.setCurrentDate(year(), month(), day());
+      }
     }
   }
-  return age;
-  
-  void get_position(long *latitude, long *longitude, unsigned long *fix_age = 0);
 }
 
 void loop()
 {
   unsigned long fixAge;
 
-  fixAge = runEncoder();
+  runEncoder();
 
   if (runDefault) {
     runDefault();

@@ -83,9 +83,6 @@ void Christmas::setFirstActive(int c)
 void Christmas::action()
 {
   for (int i = 0; i < pixelMap.size(); i++) {
-    if (pixelMap[i] == NON_PIXEL)
-      continue;
-      
     CHSV pixel = pixels[pixelMap[i]];
     
     switch (pixelMap.pixelDir(i)) {
