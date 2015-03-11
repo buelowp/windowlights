@@ -34,15 +34,16 @@
 #include "IndependenceDay.h"
 #include "Thanksgiving.h"
 #include "SunPosition.h"
+#include "Norah.h"
 
-#define PIN1    5
-#define PIN2    7
-#define PIN3    9
-#define PIN4    11
+#define PIN1    3
+#define PIN2    4
+#define PIN3    17
+#define PIN4    18
 
 CRGB strip[NUM_STRIPS][NUM_LEDS];
 TinyGPSPlus gps;
-HardwareSerial Uart = HardwareSerial();
+time_t prevDisplay = 0; // when the digital clock was displayed
 SunPosition sun;
 int bounce;
 bool defaultProg;
@@ -52,17 +53,28 @@ void setup()
 {
   pinMode(SWITCH_PIN, INPUT);
   attachInterrupt(SWITCH_PIN, isrService, FALLING);
-  Uart.begin(9600);
+  Serial1.begin(9600);
+  Serial.begin(115200);
+  pinMode(PIN1, OUTPUT);
+  pinMode(PIN2, OUTPUT);
+  pinMode(PIN3, OUTPUT);
+  pinMode(PIN4, OUTPUT);
   
   delay(3000);
-  FastLED.addLeds<NEOPIXEL, PIN1>(strip[0], NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN2>(strip[1], NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN4>(strip[3], NUM_LEDS);
+//  FastLED.addLeds<NEOPIXEL, PIN1>(strip[0], NUM_LEDS);
+//  FastLED.addLeds<NEOPIXEL, PIN2>(strip[1], NUM_LEDS);
+//  FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, PIN4>(strip[0], NUM_LEDS);
   randomSeed(analogRead(0));
   bounce = 0;
   defaultProg = false;
   tzOffset = 0;
+  
+  for (int i = 0; i < NUM_LEDS; i++) {
+    strip[3][i] = CRGB::Black;
+  }
+  FastLED.show();
+
 }
 
 int getDOW(int m, int d)
@@ -206,7 +218,7 @@ void runChristmas()
     }
     wink.action();
     elapsedMillis delta;
-    runEncoder();
+    runGPSDecoder();
     if (delta <= 25)
       delay(25 - delta);
   }
@@ -217,17 +229,19 @@ void runValentines()
 {
   Valentines vday(TOTAL_PIXELS);
   vday.startup();
-  
+  Serial.println("In V-Day");
   sun.setTZOffset(tzOffset);
   
   while (validRunTime()) {
     vday.action();
     elapsedMillis delta;
-    runEncoder();
-    if (delta >= 500)
+    runGPSDecoder();
+    if (delta >= 500) {
       delay(delta);
-    else
+    }
+    else {
       delay(500 - delta);
+    }
   }
   pixelShutdown();
 }
@@ -242,7 +256,7 @@ void runIndependence()
   while (validRunTime()) {
     iday.action();
     elapsedMillis delta;
-    runEncoder();
+    runGPSDecoder();
     if (delta >= 500)
       delay(delta);
     else {
@@ -262,7 +276,7 @@ void runHalloween()
   while (validRunTime()) {
     hday.action();
     elapsedMillis delta;
-    runEncoder();
+    runGPSDecoder();
     if (delta >= 500)
       delay(delta);
     else
@@ -281,7 +295,27 @@ void runThanksgiving()
   while (validRunTime()) {
     tday.action();
     elapsedMillis delta;
-    runEncoder();
+    runGPSDecoder();
+    if (delta >= 500)
+      delay(delta);
+    else
+      delay(500 - delta);
+  }
+  pixelShutdown();
+}
+
+void runNorah()
+{
+  Norah bday(TOTAL_PIXELS);
+  bday.startup();
+  
+  Serial.println("Running Norah");
+  sun.setTZOffset(tzOffset);
+  
+  while (validRunTime()) {
+    bday.action();
+    elapsedMillis delta;
+    runGPSDecoder();
     if (delta >= 500)
       delay(delta);
     else
@@ -298,7 +332,7 @@ void runDefault()
   while (hour() != 0) {
     iday.action();
     elapsedMillis delta;
-    runEncoder();
+    runGPSDecoder();
     if (delta >= 500)
       delay(delta);
     else {
@@ -310,6 +344,16 @@ void runDefault()
 
 int programOnDeck(int m, int d)
 {
+  if (year() < 2015) {
+    Serial.print("Got year = ");
+    Serial.println(year());
+    return NOHOLIDAY;
+  }
+    
+  Serial.print("Check for m=");
+  Serial.print(m);
+  Serial.print(" and day=");
+  Serial.println(d);
   if ((m == 12) && (d > 11)) {
     return CHRISTMAS;
   }
@@ -328,13 +372,18 @@ int programOnDeck(int m, int d)
   if ((m == 5) && (d == 25)) {
     return MEMORIAL;
   }
+  if ((m == 3) && (d == 10)) {
+    return NORAH;
+  }
+  Serial.print("Failed date check for m=");
+  Serial.print(m);
+  Serial.print(" and day=");
+  Serial.println(d);
   return NOHOLIDAY;
 }
 
-void runEncoder()
+void runGPSDecoder()
 {
-  long latitude, longitude;
-  
   while (Serial1.available()) {
     if (gps.encode(Serial1.read())) { // process gps messages
       if (gps.time.isValid()) {
@@ -345,21 +394,81 @@ void runEncoder()
       }
     }
   }
+    if (timeStatus()!= timeNotSet) {
+      if (now() != prevDisplay) { //update the display only if the time has changed
+        if (gps.location.isValid()) {
+          sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
+        }
+        prevDisplay = now();
+        digitalClockDisplay();  
+      }
+    }
+}
+void digitalClockDisplay(){
+  int dow = getDOW(month(), day());
+  // digital clock display of the time
+  
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+  Serial.print(" ");
+  Serial.print(month());
+  Serial.print("/");
+  Serial.print(day());
+  Serial.print("/");
+  Serial.print(year());
+  Serial.print(" ");
+  Serial.print(tzOffset); 
+
+  switch (dow) {
+    case 0:
+      Serial.println(" Sunday");
+      break;
+    case 1:
+      Serial.println(" Monday");
+      break;
+    case 2:
+      Serial.println(" Tuesday");
+      break;
+    case 3:
+      Serial.println(" Wednesday");
+      break;
+    case 4:
+      Serial.println(" Thursday");
+      break;
+    case 5:
+      Serial.println(" Friday");
+      break;
+    case 6:
+      Serial.println(" Saturday");
+      break;
+    default:
+      Serial.println(dow);
+      break;
+  }
+}
+void printDigits(int digits) {
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
 }
 
 void loop()
 {
-  unsigned long fixAge;
-
-  runEncoder();
-
-  if (runDefault) {
+  runGPSDecoder();
+  if (gps.location.isValid()) {
+    sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
+  }
+  else {
+    return;
+  }
+  
+  if (defaultProg) {
     runDefault();
   }
   else {
-    if (fixAge < 1500) {
-      Serial.println("Valid fix detected");
-    
       switch (programOnDeck(month(), day())) {
         case CHRISTMAS:
           runChristmas();
@@ -377,9 +486,13 @@ void loop()
         case THANKSGIVING:
           runThanksgiving();
           break;
+        case NORAH:
+          runNorah();
+          break;
         default:
           delay(500);
       }
-    }
+
   }
 }
+

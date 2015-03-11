@@ -325,9 +325,10 @@ void SunPosition::setTZOffset(int tz)
 	tzOffset = tz;
 }
 
-void SunPosition::setPosition(double lat, double lng, int tz)
+void SunPosition::setPosition(double l, double n, int tz)
 {
-  latitude = lat;
-  longitude = lng;
+  latitude = l;
+  longitude = n;
   tzOffset = tz;  
 }
+

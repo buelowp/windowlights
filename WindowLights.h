@@ -12,8 +12,8 @@ using namespace std;
 #define LED_STRIP_4    6
 #define GPS_RX_PIN     7
 
-#define NUM_LEDS        115
-#define NUM_STRIPS      4
+#define NUM_LEDS        120
+#define NUM_STRIPS      1
 #define NUM_ACTIVE      60
 #define NORMAL_BRIGHT   100
 #define NUM_COLORS      6
@@ -26,6 +26,7 @@ using namespace std;
 #define VALENTINES     103
 #define MEMORIAL       104
 #define INDEPENDENCE   105
+#define NORAH          106
 #define NOHOLIDAY      999
 
 extern CRGB strip[NUM_STRIPS][NUM_LEDS];
