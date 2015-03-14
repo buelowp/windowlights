@@ -14,7 +14,7 @@ using namespace std;
 
 #define NUM_LEDS        120
 #define NUM_STRIPS      1
-#define NUM_ACTIVE      60
+#define NUM_ACTIVE      20
 #define NORMAL_BRIGHT   100
 #define NUM_COLORS      6
 #define TOTAL_PIXELS    (NUM_LEDS * NUM_STRIPS)

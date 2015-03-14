@@ -47,11 +47,17 @@ public:
   CHSV getNextPixel();
   
 private:
+  bool scale_pixel_up(int i);
+  bool scale_pixel_down(int i);
+  bool scale_pixel_to_normal(int i);
+  void set_new_pixel_color(int i);
+  
   vector<CHSV> pixels;
   LedPixelMap pixelMap;
   int totalPixels;
   int numActive;
   int index;
+  int swap;
 };
 
 #endif

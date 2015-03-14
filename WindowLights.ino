@@ -202,25 +202,19 @@ void pixelShutdown()
 void runChristmas()
 {
   Christmas wink(TOTAL_PIXELS, NUM_ACTIVE);
-  int buff = 0;
   
-  Serial.println("Running Christmas");
   sun.setTZOffset(tzOffset);
   
   wink.startup();
-  wink.setFirstActive(30);
+  wink.setFirstActive(5);
   wink.seeTheRainbow();
   
-  while (validRunTime()) {
-    if (buff++ == 20) {
-      buff = 0;
-      wink.addOne();
-    }
+  while (hour() != 0) {
     wink.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta <= 25)
-      delay(25 - delta);
+    if (random(0, 3) == 2)
+      wink.addOne();
+      
+    delay(25);
   }
   pixelShutdown();
 }
@@ -234,14 +228,7 @@ void runValentines()
   
   while (validRunTime()) {
     vday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500) {
-      delay(delta);
-    }
-    else {
-      delay(500 - delta);
-    }
+    delay(500);
   }
   pixelShutdown();
 }
@@ -255,13 +242,7 @@ void runIndependence()
   
   while (validRunTime()) {
     iday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500)
-      delay(delta);
-    else {
-      delay(500 - delta);
-    }
+    delay(500);
   }
   pixelShutdown();
 }
@@ -275,12 +256,7 @@ void runHalloween()
   
   while (validRunTime()) {
     hday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500)
-      delay(delta);
-    else
-      delay(500 - delta);
+    delay(500);
   }
   pixelShutdown();
 }
@@ -294,12 +270,7 @@ void runThanksgiving()
   
   while (validRunTime()) {
     tday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500)
-      delay(delta);
-    else
-      delay(500 - delta);
+    delay(500);
   }
   pixelShutdown();
 }
@@ -314,12 +285,7 @@ void runNorah()
   
   while (validRunTime()) {
     bday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500)
-      delay(delta);
-    else
-      delay(500 - delta);
+    delay(500);
   }
   pixelShutdown();
 }
@@ -331,13 +297,7 @@ void runDefault()
   
   while (hour() != 0) {
     iday.action();
-    elapsedMillis delta;
-    runGPSDecoder();
-    if (delta >= 500)
-      delay(delta);
-    else {
-      delay(500 - delta);
-    }
+    delay(500);
   }
   pixelShutdown();
 }
@@ -345,16 +305,10 @@ void runDefault()
 int programOnDeck(int m, int d)
 {
   if (year() < 2015) {
-    Serial.print("Got year = ");
-    Serial.println(year());
     return NOHOLIDAY;
   }
     
-  Serial.print("Check for m=");
-  Serial.print(m);
-  Serial.print(" and day=");
-  Serial.println(d);
-  if ((m == 12) && (d > 11)) {
+  if ((m == 3) && (d == 13)) {
     return CHRISTMAS;
   }
   if ((m == 2) && (d == 14)) {
@@ -372,13 +326,12 @@ int programOnDeck(int m, int d)
   if ((m == 5) && (d == 25)) {
     return MEMORIAL;
   }
-  if ((m == 3) && (d == 10)) {
+  if ((m == 4) && (d == 14)) {
     return NORAH;
   }
-  Serial.print("Failed date check for m=");
-  Serial.print(m);
-  Serial.print(" and day=");
-  Serial.println(d);
+  if ((m == 4) && (d == 18)) {
+    return NORAH;
+  }
   return NOHOLIDAY;
 }
 
@@ -394,16 +347,17 @@ void runGPSDecoder()
       }
     }
   }
-    if (timeStatus()!= timeNotSet) {
-      if (now() != prevDisplay) { //update the display only if the time has changed
-        if (gps.location.isValid()) {
-          sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
-        }
-        prevDisplay = now();
-        digitalClockDisplay();  
+  if (timeStatus()!= timeNotSet) {
+    if (now() != prevDisplay) { //update the display only if the time has changed
+      if (gps.location.isValid()) {
+        sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
       }
+      prevDisplay = now();
+      digitalClockDisplay();  
     }
+  }
 }
+
 void digitalClockDisplay(){
   int dow = getDOW(month(), day());
   // digital clock display of the time
@@ -458,13 +412,7 @@ void printDigits(int digits) {
 void loop()
 {
   runGPSDecoder();
-  if (gps.location.isValid()) {
-    sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
-  }
-  else {
-    return;
-  }
-  
+
   if (defaultProg) {
     runDefault();
   }
@@ -489,8 +437,6 @@ void loop()
         case NORAH:
           runNorah();
           break;
-        default:
-          delay(500);
       }
 
   }

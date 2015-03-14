@@ -23,6 +23,10 @@
 **/
 #include "Christmas.h"
 
+#define SCALE_VAL       2
+#define SCALE_SAT       3
+#define SCALE_VAL_NORM  2
+
 static HSVHue ChristmasColorWheel[] = {
   HUE_RED,
   HUE_YELLOW,
@@ -38,10 +42,72 @@ Christmas::Christmas(int p, int a)
   totalPixels = p;
   numActive = a;
   index = 0;
+  swap = random(2, 9);
 }
 
 Christmas::~Christmas()
 {
+}
+
+bool Christmas::scale_pixel_up(int i)
+{
+  CHSV pixel = pixels[i];
+  if (pixel.v == 255 && pixel.s == 0)
+    return true;
+    
+  if ((pixel.v + SCALE_VAL) >= 255)
+    pixel.v = 255;
+  else
+    pixel.v += SCALE_VAL;
+    
+  if ((pixel.s - SCALE_SAT) <= 0)
+    pixel.s = 0;
+  else
+    pixel.s -= SCALE_SAT;
+    
+  pixels[i] = pixel;
+  return false;
+}
+
+bool Christmas::scale_pixel_down(int i)
+{
+  CHSV pixel = pixels[i];
+  if (pixel.v == 0 && pixel.s == 255)
+    return true;
+    
+  if ((pixel.v - 4) <= 0)
+    pixel.v = 0;
+  else
+    pixel.v -= 4;
+    
+  if ((pixel.s + 4) >= 255)
+    pixel.s = 255;
+  else
+    pixel.s += 4;
+    
+  pixels[i] = pixel;
+  return false;
+}
+
+bool Christmas::scale_pixel_to_normal(int i)
+{
+  CHSV pixel = pixels[i];
+  if ((pixel.v + SCALE_VAL_NORM) >= NORMAL_BRIGHT) {
+    pixel.v = NORMAL_BRIGHT;
+    return true;
+  }
+  
+  pixel.v += SCALE_VAL_NORM;
+  
+  pixels[i] = pixel;
+  return false;
+}
+
+void Christmas::set_new_pixel_color(int i)
+{
+  pixels[i].v = 0;
+  pixels[i].h = ChristmasColorWheel[random(0, NUM_COLORS)];
+  pixels[i].s = 255;
 }
 
 void Christmas::startup()
@@ -62,6 +128,7 @@ void Christmas::startup()
  */
 void Christmas::setFirstActive(int c)
 {
+  /*
   int count = 0;
   bool found = false;
   
@@ -78,46 +145,33 @@ void Christmas::setFirstActive(int c)
       count++;
     }
   }
+  */
+  pixelMap.addNewPixel(1, GOING_UP);
+  pixelMap.addNewPixel(2, GOING_UP);
+  pixelMap.addNewPixel(3, GOING_UP);
+  pixelMap.addNewPixel(4, GOING_UP);
+  pixelMap.addNewPixel(5, GOING_UP);
 }
 
 void Christmas::action()
 {
-  for (int i = 0; i < pixelMap.size(); i++) {
-    CHSV pixel = pixels[pixelMap[i]];
-    
+  for (int i = 0; i <= pixelMap.size(); i++) {
     switch (pixelMap.pixelDir(i)) {
     case GOING_UP:
-      if (pixel.v == 254) {
-        pixel.v = 255;
+      if (scale_pixel_up(pixelMap[i]))
         pixelMap.setPixelDir(i, GOING_DOWN);
-      }
-      else {
-        pixel.v += 2;
-      }
-      pixels[pixelMap[i]] = pixel;
+
       break;
     case GOING_DOWN:
-      if (pixel.v == 1) {
-        pixel.v = 0;
-        pixel.h = ChristmasColorWheel[random(0, NUM_COLORS)];
-        pixel.s = 255;
+      if (scale_pixel_down(pixelMap[i])) {
+        set_new_pixel_color(pixelMap[i]);
         pixelMap.setPixelDir(i, RETURN_TO_NORM);
       }
-      else {
-        pixel.v -= 2;
-      }
-      pixels[pixelMap[i]] = pixel;
       break;
     case RETURN_TO_NORM:
-      if (pixel.v == (NORMAL_BRIGHT - 1)) {
-        pixel.v = NORMAL_BRIGHT;
-        pixels[pixelMap[i]] = pixel;
+      if (scale_pixel_to_normal(pixelMap[i]))
         pixelMap.removePixel(i);
-      }
-      else {
-        pixel.v += 2;
-        pixels[pixelMap[i]] = pixel;
-      }
+        
       break;
     }    
   }
@@ -136,18 +190,7 @@ void Christmas::addOne()
     pixelMap.addNewPixel(pixel, GOING_UP);
   }
 }
-/*
-CHSV Christmas::getNextPixel()
-{
-  if (index == pixels.size()) {
-    CHSV a;
-    memset((void*)&a, 0, sizeof(CHSV));
-    return a;
-  }
-  
-  return pixels[index++];
-}
-*/
+
 void Christmas::seeTheRainbow()
 {
   for (int i = 0; i < NUM_STRIPS; i++) {

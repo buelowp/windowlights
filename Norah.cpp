@@ -24,7 +24,7 @@
 #include "Norah.h"
 
 static CRGB NorahColorWheel[] = {
-  CRGB::Pink,
+  CRGB::DeepPink,
   CRGB::Gold,
 };
 
@@ -40,22 +40,12 @@ Norah::~Norah()
 
 void Norah::startup()
 {
-  int sep = totalPixels / 4;
-  
   for (int i = 0; i < totalPixels; i++) {
-    switch (i / sep) {
-      case 0:
-        pixels.push_back(CRGB::Pink);
-        break;
-      case 1:
-        pixels.push_back(CRGB::Gold);
-        break;
-      case 2:
-        pixels.push_back(CRGB::Pink);
-        break;
-      case 3:
-        pixels.push_back(CRGB::Gold);
-        break;
+    if ((i % 2) == 0) {
+      pixels.push_back(CRGB::DeepPink);
+    }
+    else {
+      pixels.push_back(CRGB::Gold);
     }
   }
     
@@ -64,33 +54,15 @@ void Norah::startup()
 
 void Norah::action()
 {
-  int sep = totalPixels / 4;
-  int first = 0;
-  int sec = 1;
-  
   for (int i = 0; i < totalPixels; i++) {
-    switch (i / sep) {
-      case 1:
-      case 2:
-        if ((i % 2) == 0) {
-          pixels[i] = NorahColorWheel[first];
-        }
-        else {
-          pixels[i] = NorahColorWheel[sec];
-        }
-        break;
+    if ((i % 2) == which) {
+      pixels[i] = (CRGB::DeepPink);
+    }
+    else {
+      pixels[i] = (CRGB::Gold);
     }
   }
-  if (first)
-    first = 0;
-  else
-    first = 1;
-    
-  if (sec)
-    sec = 0;
-  else
-    sec = 1;
-          
+  which = !which;
   seeTheRainbow();
 }
 
