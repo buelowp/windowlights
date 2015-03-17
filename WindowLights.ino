@@ -166,13 +166,13 @@ bool validRunTime()
   double sunset = sun.calcSunset();
   double minsPastMidnight = hour() * 60 + minute();
   
-  if ((minsPastMidnight >= (sunrise - 60)) || (minsPastMidnight <= (sunrise + 30))) {
+  if ((minsPastMidnight >= (sunrise - 60)) && (minsPastMidnight < (sunrise + 15))) {
     return true;
   }
-  if ((minsPastMidnight >= (sunset - 30)) || hour() != 0) {
+  if (minsPastMidnight >= (sunset - 30) && (hour() != 0)) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -209,7 +209,7 @@ void runChristmas()
   wink.setFirstActive(5);
   wink.seeTheRainbow();
   
-  while (hour() != 0) {
+  while (validRunTime()) {
     wink.action();
     if (random(0, 3) == 2)
       wink.addOne();
@@ -256,7 +256,7 @@ void runHalloween()
   
   while (validRunTime()) {
     hday.action();
-    delay(500);
+    delay(1000);
   }
   pixelShutdown();
 }
@@ -307,30 +307,43 @@ int programOnDeck(int m, int d)
   if (year() < 2015) {
     return NOHOLIDAY;
   }
-    
-  if ((m == 3) && (d == 13)) {
+  
+  /* Christmas lights start on the 10th of december, and go through the end of the month */
+  if ((m == 12) && (d >= 10)) {
     return CHRISTMAS;
   }
+  /* Valentines day lights only on the 14th */
   if ((m == 2) && (d == 14)) {
     return VALENTINES;
   }
+  /* Independence day lights on the 4th, but also on Labor and Memorial days */
   if ((m == 7) && (d == 4)) {
     return INDEPENDENCE;
   }
+  if (m == 5) {
+    if ((d > 24) && (getDOW(m, d) == 1)) {
+      return INDEPENDENCE;
+    }
+  }
+  if (m == 9) {
+    if ((d < 8) && (getDOW(m, d) == 1)) {
+      return INDEPENDENCE;
+    }
+  }
+  /* Halloween starts on the 24th and runs through the end of the month */
   if ((m == 10) && (d > 24)) {
     return HALLOWEEN;
   }
+  /* Start turkey day lights on the 20th and run through the end of the month */
   if (m == 11 && d > 20) {
     return THANKSGIVING;
   }
-  if ((m == 5) && (d == 25)) {
-    return MEMORIAL;
-  }
-  if ((m == 4) && (d == 14)) {
-    return NORAH;
-  }
-  if ((m == 4) && (d == 18)) {
-    return NORAH;
+  /* Random other days to show a pattern */
+  if (m == 4) {
+    if (d == 14)
+      return HDAY1;
+    if (d == 18)
+      return HDAY1;
   }
   return NOHOLIDAY;
 }
@@ -424,7 +437,6 @@ void loop()
         case VALENTINES:
           runValentines();
           break;
-        case MEMORIAL:
         case INDEPENDENCE:
           runIndependence();
           break;
@@ -434,7 +446,7 @@ void loop()
         case THANKSGIVING:
           runThanksgiving();
           break;
-        case NORAH:
+        case HDAY1:
           runNorah();
           break;
       }

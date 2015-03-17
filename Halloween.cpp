@@ -43,12 +43,13 @@ Halloween::~Halloween()
 
 void Halloween::startup()
 {
-  int window = 1;
+  int window = 0;
   CRGB c;
+  int modulo = totalPixels / 4;
   
   for (int i = 0; i < totalPixels; i++) {
-    if (i % 115) {
-      c = HalloweenColorWheel[window++];
+    if ((i % modulo) == 0) {
+      c = c = HalloweenColorWheel[random(0, 5)];;
     }
     pixels.push_back(c);
   }
@@ -57,10 +58,30 @@ void Halloween::startup()
 
 void Halloween::action()
 {
+  int window = 0;
+  CRGB c;
+  int modulo = totalPixels / 4;
+  
+  for (int i = 0; i < totalPixels; i++) {
+    if ((i % modulo) == 0) {
+      c = HalloweenColorWheel[random(0, 5)];
+    }
+    pixels[i] = c;
+  }
+  seeTheRainbow();          
 }
 
 void Halloween::seeTheRainbow()
 {
+  int k = 0;
+  
+  for (int i = 0; i < NUM_STRIPS; i++) {
+    for (int j = 0; j < LEDS_PER_STRIP; j++) {
+      strip[i][j] = pixels[k++];
+    }
+  }
+  FastLED.setBrightness(100);
+  FastLED.show();
 }
 
 

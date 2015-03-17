@@ -23,9 +23,9 @@
 **/
 #include "Christmas.h"
 
-#define SCALE_VAL       2
-#define SCALE_SAT       3
-#define SCALE_VAL_NORM  2
+#define SCALE_VAL       1
+#define SCALE_SAT       2
+#define SCALE_VAL_NORM  1
 
 static HSVHue ChristmasColorWheel[] = {
   HUE_RED,

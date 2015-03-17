@@ -40,7 +40,6 @@ public:
 private:
   vector<CRGB> pixels;
   int totalPixels;
-  int which;
 };
 
 #endif

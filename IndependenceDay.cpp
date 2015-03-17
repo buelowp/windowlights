@@ -26,7 +26,6 @@
 Independence::Independence(int p)
 {
   totalPixels = p;
-  which = 0;
 }
 
 Independence::~Independence()
@@ -35,30 +34,37 @@ Independence::~Independence()
 
 void Independence::startup()
 {
-  int window = totalPixels / 4;
+  int which = 0;
   
-  for (int i = 0; i < window; i++) {
-    int c = i % 3;
-    switch (c) {
-      case 0:
-        pixels.push_back(CRGB::Red);
-        break;
-      case 1:
-        pixels.push_back(CRGB::White);
-        break;
-      case 2:
-        pixels.push_back(CRGB::Blue);
-        break;
-    }
-      
-    for (int i = window; i < window * 2; i++) {
-      pixels.push_back(CRGB::Blue);
-    }
-    for (int i = window * 2; i < window * 3; i++) {
-      pixels.push_back(CRGB::White);
-    }
-    for (int i = window * 3; i < window * 4; i++) {
-      pixels.push_back(CRGB::Red);
+  for (int i = 0; i < NUM_STRIPS; i++) {
+    for (int j = 0; j < LEDS_PER_STRIP; j++) {
+      switch (i) {
+        case 0:
+          pixels.push_back(CRGB::Red);
+          break;
+        case 1:
+          pixels.push_back(CRGB::White);
+          break;
+        case 2:
+          pixels.push_back(CRGB::Blue);
+          break;
+        case 3:
+          switch (which) {
+            case 0:
+              pixels.push_back(CRGB::Red);
+              which++;
+              break;
+            case 1:
+              pixels.push_back(CRGB::White);
+              which++;
+              break;
+            case 2:
+              pixels.push_back(CRGB::Blue);
+              which = 0;
+              break;
+          }
+          break;
+      }
     }
   }
   seeTheRainbow();
@@ -66,68 +72,63 @@ void Independence::startup()
 
 void Independence::action()
 {
-  int window = totalPixels / 4;
-
-  for (int i = 0; i < window; i++) {
+  int which = 0;
+  
+  for (int i = 0; i < LEDS_PER_STRIP; i++) {
     int c = i % 3;
-    switch (c) {
+    switch(c) {
       case 0:
         switch (which) {
           case 0:
-            pixels[i] = CRGB::Red;
+            strip[3][i] = CRGB::Red;
             break;
           case 1:
-            pixels[i] = CRGB::White;
+            strip[3][i] = CRGB::White;
             break;
           case 2:
-            pixels[i] = CRGB::Blue;
+            strip[3][i] = CRGB::Blue;
             break;
         }
         break;
       case 1:
         switch (which) {
           case 0:
-            pixels[i] = CRGB::Blue;
+            strip[3][i] = CRGB::Blue;
             break;
           case 1:
-            pixels[i] = CRGB::Red;
+            strip[3][i] = CRGB::Red;
             break;
           case 2:
-            pixels[i] = CRGB::White;
+            strip[3][i] = CRGB::White;
             break;
         }
         break;
       case 2:
         switch (which) {
           case 0:
-            pixels[i] = CRGB::White;
+            strip[3][i] = CRGB::White;
             break;
           case 1:
-            pixels[i] = CRGB::Blue;
+            strip[3][i] = CRGB::Blue;
             break;
           case 2:
-            pixels[i] = CRGB::Red;
+            strip[3][i] = CRGB::Red;
             break;
         }
         break;
     }
   }
-  if (which == 2)
-    which = 0;
-  else
-    which++;
-    
   seeTheRainbow();
 }
 
 void Independence::seeTheRainbow()
 {
-  int index = -1;
-  for (int i = 0; i < totalPixels; i++) {
-    if ((i % NUM_LEDS) == 0)
-      index++;
-      
-    strip[index][i % NUM_LEDS] = pixels[i];
+  int k = 0;
+  
+  for (int i = 0; i < NUM_STRIPS; i++) {
+    for (int j = 0; j < LEDS_PER_STRIP; j++) {
+      strip[i][j] = pixels[k++];
+    }
   }
   FastLED.setBrightness(100);
   FastLED.show();
