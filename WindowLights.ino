@@ -301,6 +301,7 @@ void runDefault()
       iday.action();
       delay(500);
     }
+    defaultProg = false;
     pixelShutdown();
   }
 }
