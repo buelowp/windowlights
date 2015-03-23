@@ -49,7 +49,7 @@ void Halloween::startup()
   
   for (int i = 0; i < totalPixels; i++) {
     if ((i % modulo) == 0) {
-      c = c = HalloweenColorWheel[random(0, 5)];;
+      c = HalloweenColorWheel[random(0, 5)];
     }
     pixels.push_back(c);
   }
@@ -61,14 +61,20 @@ void Halloween::action()
   int window = 0;
   CRGB c;
   int modulo = totalPixels / 4;
+  bool changeFlag = false;
   
   for (int i = 0; i < totalPixels; i++) {
     if ((i % modulo) == 0) {
-      c = HalloweenColorWheel[random(0, 5)];
+      changeFlag = false;
+      if (random(0, 3) == 1) {
+        c = HalloweenColorWheel[random(0, 5)];
+        changeFlag = true;
+      }
     }
-    pixels[i] = c;
+    if (changeFlag)
+      pixels[i] = c;
   }
-  seeTheRainbow();          
+  seeTheRainbow();
 }
 
 void Halloween::seeTheRainbow()

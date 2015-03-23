@@ -48,6 +48,7 @@ SunPosition sun;
 int bounce;
 bool defaultProg;
 int tzOffset;
+int delta;
 
 void setup()
 {
@@ -71,10 +72,11 @@ void setup()
   tzOffset = 0;
   
   for (int i = 0; i < NUM_LEDS; i++) {
-    strip[3][i] = CRGB::Black;
+    strip[0][i] = CRGB::Black;
   }
   FastLED.show();
 
+  delta = 0;
 }
 
 int getDOW(int m, int d)
@@ -203,103 +205,104 @@ void runChristmas()
 {
   Christmas wink(TOTAL_PIXELS, NUM_ACTIVE);
   
-  sun.setTZOffset(tzOffset);
+  if (validRunTime()) {
+    wink.startup();
+    wink.setFirstActive(5);
+    wink.seeTheRainbow();
   
-  wink.startup();
-  wink.setFirstActive(5);
-  wink.seeTheRainbow();
-  
-  while (validRunTime()) {
-    wink.action();
-    if (random(0, 3) == 2)
-      wink.addOne();
-      
-    delay(25);
+    while (validRunTime()) {
+      wink.action();
+      if (random(0, 3) == 2)
+        wink.addOne();
+        
+      delay(25);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runValentines()
 {
   Valentines vday(TOTAL_PIXELS);
-  vday.startup();
-  Serial.println("In V-Day");
-  sun.setTZOffset(tzOffset);
+  if (validRunTime()) {
+    vday.startup();
   
-  while (validRunTime()) {
-    vday.action();
-    delay(500);
+    while (validRunTime()) {
+      vday.action();
+      delay(500);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runIndependence()
 {
   Independence iday(TOTAL_PIXELS);
-  iday.startup();
-  
-  sun.setTZOffset(tzOffset);
-  
-  while (validRunTime()) {
-    iday.action();
-    delay(500);
+  if (validRunTime()) {
+    iday.startup();
+    
+    while (validRunTime()) {
+      iday.action();
+      delay(500);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runHalloween()
 {
   Halloween hday(TOTAL_PIXELS);
-  hday.startup();
+  if (validRunTime()) {
+    hday.startup();
   
-  sun.setTZOffset(tzOffset);
-  
-  while (validRunTime()) {
-    hday.action();
-    delay(1000);
+    while (validRunTime()) {
+      hday.action();
+      delay(1000);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runThanksgiving()
 {
   Thanksgiving tday(TOTAL_PIXELS);
-  tday.startup();
-  
-  sun.setTZOffset(tzOffset);
-  
-  while (validRunTime()) {
-    tday.action();
-    delay(500);
+  if (validRunTime()) {
+    tday.startup();
+    
+    while (validRunTime()) {
+      tday.action();
+      delay(500);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runNorah()
 {
   Norah bday(TOTAL_PIXELS);
-  bday.startup();
-  
-  Serial.println("Running Norah");
-  sun.setTZOffset(tzOffset);
-  
-  while (validRunTime()) {
-    bday.action();
-    delay(500);
+  if (validRunTime()) {
+    bday.startup();
+    
+    while (validRunTime()) {
+      bday.action();
+      delay(500);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 void runDefault()
 {
   Independence iday(TOTAL_PIXELS);
-  iday.startup();
-  
-  while (hour() != 0) {
-    iday.action();
-    delay(500);
+  if (validRunTime()) {
+    iday.startup();
+    
+    while (hour() != 0) {
+      iday.action();
+      delay(500);
+    }
+    pixelShutdown();
   }
-  pixelShutdown();
 }
 
 int programOnDeck(int m, int d)
@@ -345,7 +348,7 @@ int programOnDeck(int m, int d)
     if (d == 18)
       return HDAY1;
   }
-  return NOHOLIDAY;
+  return HALLOWEEN;
 }
 
 void runGPSDecoder()
