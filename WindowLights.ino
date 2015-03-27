@@ -171,7 +171,7 @@ bool validRunTime()
   if ((minsPastMidnight >= (sunrise - 60)) && (minsPastMidnight < (sunrise + 15))) {
     return true;
   }
-  if (minsPastMidnight >= (sunset - 30) && (hour() != 0)) {
+  if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1440)) {
     return true;
   }
 
@@ -349,26 +349,38 @@ int programOnDeck(int m, int d)
     if (d == 18)
       return HDAY1;
   }
-  return HALLOWEEN;
+  return NOHOLIDAY;
 }
 
+/**
+ * Run the decoder for at least a few seconds. I found an issue
+ * where it is possible to ignore GPS for a while, then the first
+ * read will reset time to an odd or unexpected value. However, it
+ * was valid, so the system would be confused as to what time
+ * it really is.
+ */
 void runGPSDecoder()
 {
-  while (Serial1.available()) {
-    if (gps.encode(Serial1.read())) { // process gps messages
-      if (gps.time.isValid()) {
-        setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
-        setDST();
-        adjustTime(tzOffset * SECS_PER_HOUR);
-        sun.setCurrentDate(year(), month(), day());
+  elapsedMillis howlong;
+  
+  while (howlong < 5000) {
+    while (Serial1.available()) {
+      if (gps.encode(Serial1.read())) { // process gps messages
+        if (gps.time.isValid()) {
+          setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
+          setDST();
+          adjustTime(tzOffset * SECS_PER_HOUR);
+          sun.setCurrentDate(year(), month(), day());
+        }
+        if (gps.location.isValid()) {
+          sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
+        }
       }
     }
   }
+  
   if (timeStatus()!= timeNotSet) {
     if (now() != prevDisplay) { //update the display only if the time has changed
-      if (gps.location.isValid()) {
-        sun.setPosition(gps.location.lat(), -gps.location.lng(), tzOffset);
-      }
       prevDisplay = now();
       digitalClockDisplay();  
     }
@@ -434,27 +446,26 @@ void loop()
     runDefault();
   }
   else {
-      switch (programOnDeck(month(), day())) {
-        case CHRISTMAS:
-          runChristmas();
-          break;
-        case VALENTINES:
-          runValentines();
-          break;
-        case INDEPENDENCE:
-          runIndependence();
-          break;
-        case HALLOWEEN:
-          runHalloween();
-          break;
-        case THANKSGIVING:
-          runThanksgiving();
-          break;
-        case HDAY1:
-          runNorah();
-          break;
-      }
-
+    switch (programOnDeck(month(), day())) {
+      case CHRISTMAS:
+        runChristmas();
+        break;
+      case VALENTINES:
+        runValentines();
+        break;
+      case INDEPENDENCE:
+        runIndependence();
+        break;
+      case HALLOWEEN:
+        runHalloween();
+        break;
+      case THANKSGIVING:
+        runThanksgiving();
+        break;
+      case HDAY1:
+        runNorah();
+        break;
+    }
   }
 }
 
