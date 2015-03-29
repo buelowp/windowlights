@@ -40,30 +40,30 @@ void Independence::startup()
     for (int j = 0; j < LEDS_PER_STRIP; j++) {
       switch (i) {
         case 0:
-          pixels.push_back(CRGB::Red);
+          strip[i][j] = CRGB::Red;
           break;
         case 1:
-          pixels.push_back(CRGB::White);
+          strip[i][j] = CRGB::White;
           break;
         case 2:
-          pixels.push_back(CRGB::Blue);
+          strip[i][j] = CRGB::Blue;
           break;
         case 3:
           switch (which) {
             case 0:
-              pixels.push_back(CRGB::Red);
+              strip[i][j] = CRGB::Red;
               which++;
               break;
             case 1:
-              pixels.push_back(CRGB::White);
+              strip[i][j] = CRGB::White;
               which++;
               break;
             case 2:
-              pixels.push_back(CRGB::Blue);
+              strip[i][j] = CRGB::Blue;
               which = 0;
               break;
           }
-          break;
+        break;
       }
     }
   }

@@ -168,6 +168,8 @@ bool validRunTime()
   double sunset = sun.calcSunset();
   double minsPastMidnight = hour() * 60 + minute();
   
+  return true;
+  
   if ((minsPastMidnight >= (sunrise - 60)) && (minsPastMidnight < (sunrise + 15))) {
     return true;
   }
@@ -257,6 +259,9 @@ void runHalloween()
   
     while (validRunTime()) {
       hday.action();
+      if (random(0, 50) == 23) {
+        hday.lightning(random(0, NUM_STRIPS));
+      }
       delay(1000);
     }
     pixelShutdown();
@@ -271,7 +276,7 @@ void runThanksgiving()
     
     while (validRunTime()) {
       tday.action();
-      delay(500);
+      delay(1000);
     }
     pixelShutdown();
   }
@@ -349,7 +354,7 @@ int programOnDeck(int m, int d)
     if (d == 18)
       return HDAY1;
   }
-  return NOHOLIDAY;
+  return HALLOWEEN;
 }
 
 /**

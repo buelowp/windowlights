@@ -34,7 +34,9 @@ public:
   ~Halloween();
   
   void seeTheRainbow();
+  void seeTheRainbow(int);
   void startup();
+  void lightning(int);
   void action();
   
 private:

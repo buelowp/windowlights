@@ -19,9 +19,15 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *THE SOFTWARE.
+ * THE SOFTWARE.
+ *
+ * The Lightning code was taken from Daniel Wilson
+ * https://github.com/fibonacci162/LEDs/tree/master/Lightning2014
+ *
  */
 #include "Halloween.h"
+
+#define FLASHES  15
 
 static CRGB HalloweenColorWheel[] = {
   CRGB::Red,
@@ -45,36 +51,61 @@ void Halloween::startup()
 {
   int window = 0;
   CRGB c;
-  int modulo = totalPixels / 4;
   
-  for (int i = 0; i < totalPixels; i++) {
-    if ((i % modulo) == 0) {
-      c = HalloweenColorWheel[random(0, 5)];
+  for (int i = 0; i < NUM_STRIPS; i++) {
+    c = HalloweenColorWheel[random(0, 5)];
+    for (int j = 0; j < LEDS_PER_STRIP; j++) {
+      strip[i][j] = c;
     }
-    pixels.push_back(c);
   }
   seeTheRainbow();          
 }
 
+/*
+ * Borrowed with all thanks from Daniel Wilson
+ * https://github.com/fibonacci162/LEDs/tree/master/Lightning2014
+ */ 
+void Halloween::lightning(int window)
+{
+  CHSV flasher[NUM_LEDS];
+  uint8_t dimmer;
+  
+  for (int flashCounter = 0; flashCounter < random8(6,FLASHES); flashCounter++)
+  {
+    if (flashCounter == 0)
+      dimmer = 5;                     // the brightness of the leader is scaled down by a factor of 5
+    else 
+      dimmer = random8(1,3);           // return strokes are brighter than the leader
+    
+    for (int i = 0; i < NUM_LEDS; i++) {
+      flasher[i] = CHSV(255, 0, 255/dimmer);
+    }
+    hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
+    FastLED.show();
+    delay(random8(4,10));                 // each flash only lasts 4-10 milliseconds
+    for (int i = 0; i < NUM_LEDS; i++) {
+      flasher[i] = CHSV(255, 0, 0);
+    }
+    hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
+    FastLED.show();
+    
+    if (flashCounter == 0) 
+      delay (150);   // longer delay until next flash after the leader
+
+    delay(50+random8(100));               // shorter delay between strokes  
+  }
+//  delay(random8(FREQUENCY)*100);          // delay between strikes
+}
+
 void Halloween::action()
 {
-  int window = 0;
-  CRGB c;
-  int modulo = totalPixels / 4;
-  bool changeFlag = false;
+  int window = random(0, 3);
+  CRGB c = HalloweenColorWheel[random(0, 5)];
   
-  for (int i = 0; i < totalPixels; i++) {
-    if ((i % modulo) == 0) {
-      changeFlag = false;
-      if (random(0, 3) == 1) {
-        c = HalloweenColorWheel[random(0, 5)];
-        changeFlag = true;
-      }
-    }
-    if (changeFlag)
-      pixels[i] = c;
+  for (int j = 0; j < LEDS_PER_STRIP; j++) {
+    strip[window][j] = c;
   }
-  seeTheRainbow();
+  seeTheRainbow(window);
 }
 
 void Halloween::seeTheRainbow()
@@ -90,4 +121,14 @@ void Halloween::seeTheRainbow()
   FastLED.show();
 }
 
+void Halloween::seeTheRainbow(int window)
+{
+  int k = 0;
+  
+  for (int j = 0; j < LEDS_PER_STRIP; j++) {
+    strip[window][j] = pixels[k++];
+  }
+  FastLED.setBrightness(100);
+  FastLED.show();
+}
 

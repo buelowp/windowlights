@@ -37,11 +37,9 @@ void Valentines::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == 0) {
-      Serial.println("Pushing Red");
       pixels.push_back(CRGB::Red);
     }
     else {
-      Serial.println("Pushing white");
       pixels.push_back(CRGB::White);
     }
     seeTheRainbow();
