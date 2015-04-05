@@ -34,8 +34,10 @@ public:
   ~Halloween();
   
   void seeTheRainbow();
+  void seeTheRainbow(int);
   void startup();
   void action();
+  void lightning(int);
   
 private:
   vector<CRGB> pixels;

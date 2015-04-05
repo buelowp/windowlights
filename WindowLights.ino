@@ -252,11 +252,17 @@ void runIndependence()
 void runHalloween()
 {
   Halloween hday(TOTAL_PIXELS);
+
   if (validRunTime()) {
     hday.startup();
-  
+    
     while (validRunTime()) {
       hday.action();
+
+      if (random(0, 50) == 23) {
+        hday.lightning(random(0, NUM_STRIPS));
+      }
+
       delay(1000);
     }
     pixelShutdown();
