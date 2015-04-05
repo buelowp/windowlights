@@ -62,10 +62,10 @@ void setup()
   pinMode(PIN4, OUTPUT);
   
   delay(3000);
-//  FastLED.addLeds<NEOPIXEL, PIN1>(strip[0], NUM_LEDS);
-//  FastLED.addLeds<NEOPIXEL, PIN2>(strip[1], NUM_LEDS);
-//  FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN4>(strip[0], NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, PIN1>(strip[0], NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, PIN2>(strip[1], NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, PIN3>(strip[2], NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, PIN4>(strip[3], NUM_LEDS);
   randomSeed(analogRead(0));
   bounce = 0;
   defaultProg = false;
@@ -254,9 +254,10 @@ void runIndependence()
 void runHalloween()
 {
   Halloween hday(TOTAL_PIXELS);
+
   if (validRunTime()) {
     hday.startup();
-  
+    
     while (validRunTime()) {
       hday.action();
       if (random(0, 50) == 23) {

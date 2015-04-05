@@ -123,13 +123,6 @@ void Independence::action()
 
 void Independence::seeTheRainbow()
 {
-  int k = 0;
-  
-  for (int i = 0; i < NUM_STRIPS; i++) {
-    for (int j = 0; j < LEDS_PER_STRIP; j++) {
-      strip[i][j] = pixels[k++];
-    }
-  }
   FastLED.setBrightness(100);
   FastLED.show();
 }

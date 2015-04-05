@@ -34,7 +34,6 @@ public:
   ~Thanksgiving();
   
   void seeTheRainbow();
-  void seeTheRainbow(int);
   void startup();
   void action();
   
