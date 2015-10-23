@@ -1,0 +1,6 @@
+[submodule "sunset"]
+	path = sunset
+	url = git@github.com:buelowp/sunset.git
+[submodule "FastLED"]
+	path = FastLED
+	url = https://github.com/FastLED/FastLED.git

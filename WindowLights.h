@@ -26,8 +26,16 @@ using namespace std;
 #define THANKSGIVING   102
 #define VALENTINES     103
 #define INDEPENDENCE   105
-#define HDAY1          106
+#define NORAH_BDAY		106
+#define MADDIE_BDAY		107
 #define NOHOLIDAY      999
+
+#define CST_OFFSET      -6
+#define DST_OFFSET      (CST_OFFSET + 1)
+#define TIME_BASE_YEAR      2015
+
+#define LATITUDE        42.058102
+#define LONGITUDE       87.984189
 
 extern CRGB strip[NUM_STRIPS][NUM_LEDS];
 

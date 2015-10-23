@@ -24,7 +24,7 @@
 #ifndef __CHRISTMAS_H__
 #define __CHRISTMAS_H__
 
-#include "FastLED.h"
+#include "FastLED/FastLED.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
 
