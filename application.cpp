@@ -22,7 +22,7 @@
  *THE SOFTWARE.
 **/
 #include "application.h"
-#include "FastLED/FastLED.h"
+#include "FastLED-sparkcore/firmware/FastLED.h"
 #include "sunset/firmware/SunSet.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
@@ -35,40 +35,13 @@
 #include "SunPosition.h"
 #include "Norah.h"
 
-CRGB strip[NUM_STRIPS][NUM_LEDS];
+NSFastLED::CRGB strip[NUM_STRIPS][NUM_LEDS];
 SunSet sun;
 int bounce;
 bool defaultProg;
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
-
-void setup()
-{
-	pinMode(SWITCH_PIN, INPUT);
-	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
-	Serial.begin(115200);
-	pinMode(D0, OUTPUT);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D3, OUTPUT);
-  
-	delay(3000);
-	FastLED.addLeds<NEOPIXEL, D0>(strip[0], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D1>(strip[1], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D2>(strip[2], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D3>(strip[3], NUM_LEDS);
-	randomSeed(analogRead(A0));
-	bounce = 0;
-	defaultProg = false;
-  
-	for (int i = 0; i < NUM_LEDS; i++) {
-		strip[0][i] = CRGB::Black;
-	}
-	FastLED.show();
-
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-}
 
 int currentTimeZone()
 {
@@ -89,6 +62,33 @@ int currentTimeZone()
     }
 
     return CST_OFFSET;
+}
+
+void setup()
+{
+	pinMode(SWITCH_PIN, INPUT);
+	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
+	Serial.begin(115200);
+	pinMode(D0, OUTPUT);
+	pinMode(D1, OUTPUT);
+	pinMode(D2, OUTPUT);
+	pinMode(D3, OUTPUT);
+  
+	delay(3000);
+	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D0>(strip[0], NUM_LEDS);
+	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D1>(strip[1], NUM_LEDS);
+	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D2>(strip[2], NUM_LEDS);
+	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D3>(strip[3], NUM_LEDS);
+	randomSeed(analogRead(A0));
+	bounce = 0;
+	defaultProg = false;
+  
+	for (int i = 0; i < NUM_LEDS; i++) {
+		strip[0][i] = NSFastLED::CRGB::Black;
+	}
+	NSFastLED::FastLED.show();
+
+    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
 }
 
 bool validRunTime()
@@ -124,10 +124,10 @@ void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
 		for (int j = 0; j < NUM_LEDS; j++) {
-			strip[i][j] = CRGB::Black;
+			strip[i][j] = NSFastLED::CRGB::Black;
 		}
 	}
-	FastLED.show();
+	NSFastLED::FastLED.show();
 }
 
 void runChristmas()

@@ -40,26 +40,26 @@ void Independence::startup()
     for (int j = 0; j < LEDS_PER_STRIP; j++) {
       switch (i) {
         case 0:
-          strip[i][j] = CRGB::Red;
+          strip[i][j] = NSFastLED::CRGB::Red;
           break;
         case 1:
-          strip[i][j] = CRGB::White;
+          strip[i][j] = NSFastLED::CRGB::White;
           break;
         case 2:
-          strip[i][j] = CRGB::Blue;
+          strip[i][j] = NSFastLED::CRGB::Blue;
           break;
         case 3:
           switch (which) {
             case 0:
-              strip[i][j] = CRGB::Red;
+              strip[i][j] = NSFastLED::CRGB::Red;
               which++;
               break;
             case 1:
-              strip[i][j] = CRGB::White;
+              strip[i][j] = NSFastLED::CRGB::White;
               which++;
               break;
             case 2:
-              strip[i][j] = CRGB::Blue;
+              strip[i][j] = NSFastLED::CRGB::Blue;
               which = 0;
               break;
           }
@@ -80,39 +80,39 @@ void Independence::action()
       case 0:
         switch (which) {
           case 0:
-            strip[3][i] = CRGB::Red;
+            strip[3][i] = NSFastLED::CRGB::Red;
             break;
           case 1:
-            strip[3][i] = CRGB::White;
+            strip[3][i] = NSFastLED::CRGB::White;
             break;
           case 2:
-            strip[3][i] = CRGB::Blue;
+            strip[3][i] = NSFastLED::CRGB::Blue;
             break;
         }
         break;
       case 1:
         switch (which) {
           case 0:
-            strip[3][i] = CRGB::Blue;
+            strip[3][i] = NSFastLED::CRGB::Blue;
             break;
           case 1:
-            strip[3][i] = CRGB::Red;
+            strip[3][i] = NSFastLED::CRGB::Red;
             break;
           case 2:
-            strip[3][i] = CRGB::White;
+            strip[3][i] = NSFastLED::CRGB::White;
             break;
         }
         break;
       case 2:
         switch (which) {
           case 0:
-            strip[3][i] = CRGB::White;
+            strip[3][i] = NSFastLED::CRGB::White;
             break;
           case 1:
-            strip[3][i] = CRGB::Blue;
+            strip[3][i] = NSFastLED::CRGB::Blue;
             break;
           case 2:
-            strip[3][i] = CRGB::Red;
+            strip[3][i] = NSFastLED::CRGB::Red;
             break;
         }
         break;
@@ -123,8 +123,8 @@ void Independence::action()
 
 void Independence::seeTheRainbow()
 {
-  FastLED.setBrightness(100);
-  FastLED.show();
+	NSFastLED::FastLED.setBrightness(100);
+	NSFastLED::FastLED.show();
 }
 
 

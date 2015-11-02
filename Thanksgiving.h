@@ -24,7 +24,7 @@
 #ifndef __THANKSGIVING_H__
 #define __THANKSGIVING_H__
 
-#include "FastLED.h"
+#include "FastLED-sparkcore/firmware/FastLED.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
 
@@ -38,7 +38,7 @@ public:
   void action();
   
 private:
-  vector<CRGB> pixels;
+  std::vector<NSFastLED::CRGB> pixels;
   int which;
   int totalPixels;
 };

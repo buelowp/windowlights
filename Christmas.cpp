@@ -27,13 +27,13 @@
 #define SCALE_SAT       2
 #define SCALE_VAL_NORM  1
 
-static HSVHue ChristmasColorWheel[] = {
-  HUE_RED,
-  HUE_YELLOW,
-  HUE_BLUE,
-  HUE_GREEN,
-  HUE_PURPLE,
-  HUE_ORANGE,
+static NSFastLED::HSVHue ChristmasColorWheel[] = {
+		NSFastLED::HUE_RED,
+		NSFastLED::HUE_YELLOW,
+		NSFastLED::HUE_BLUE,
+		NSFastLED::HUE_GREEN,
+		NSFastLED::HUE_PURPLE,
+		NSFastLED::HUE_ORANGE,
 };
 
 Christmas::Christmas(int p, int a)
@@ -51,7 +51,7 @@ Christmas::~Christmas()
 
 bool Christmas::scale_pixel_up(int i)
 {
-  CHSV pixel = pixels[i];
+	NSFastLED::CHSV pixel = pixels[i];
   if (pixel.v == 255 && pixel.s == 0)
     return true;
     
@@ -71,7 +71,7 @@ bool Christmas::scale_pixel_up(int i)
 
 bool Christmas::scale_pixel_down(int i)
 {
-  CHSV pixel = pixels[i];
+	NSFastLED::CHSV pixel = pixels[i];
   if (pixel.v == 0 && pixel.s == 255)
     return true;
     
@@ -91,7 +91,7 @@ bool Christmas::scale_pixel_down(int i)
 
 bool Christmas::scale_pixel_to_normal(int i)
 {
-  CHSV pixel = pixels[i];
+	NSFastLED::CHSV pixel = pixels[i];
   if ((pixel.v + SCALE_VAL_NORM) >= NORMAL_BRIGHT) {
     pixel.v = NORMAL_BRIGHT;
     return true;
@@ -113,7 +113,7 @@ void Christmas::set_new_pixel_color(int i)
 void Christmas::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
-    CHSV c;
+	  NSFastLED::CHSV c;
     c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
     c.s = 255;
     c.v = NORMAL_BRIGHT;
@@ -194,13 +194,13 @@ void Christmas::addOne()
 void Christmas::seeTheRainbow()
 {
   for (int i = 0; i < NUM_STRIPS; i++) {
-    CHSV s[NUM_LEDS];
+	  NSFastLED::CHSV s[NUM_LEDS];
     for (int j = 0; j < NUM_LEDS; j++) {
       s[j] = pixels[(i + 1) * j];
     }
-    hsv2rgb_rainbow(s, strip[i], NUM_LEDS);
+    NSFastLED::hsv2rgb_rainbow(s, strip[i], NUM_LEDS);
   }
-  FastLED.show();
+  NSFastLED::FastLED.show();
 }
 
 

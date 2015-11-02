@@ -23,9 +23,9 @@
 **/
 #include "Norah.h"
 
-static CRGB NorahColorWheel[] = {
-  CRGB::DeepPink,
-  CRGB::Gold,
+static NSFastLED::CRGB NorahColorWheel[] = {
+		NSFastLED::CRGB::DeepPink,
+		NSFastLED::CRGB::Gold,
 };
 
 Norah::Norah(int p)
@@ -42,10 +42,10 @@ void Norah::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == 0) {
-      pixels.push_back(CRGB::DeepPink);
+      pixels.push_back(NSFastLED::CRGB::DeepPink);
     }
     else {
-      pixels.push_back(CRGB::Gold);
+      pixels.push_back(NSFastLED::CRGB::Gold);
     }
   }
     
@@ -56,10 +56,10 @@ void Norah::action()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == which) {
-      pixels[i] = (CRGB::DeepPink);
+      pixels[i] = (NSFastLED::CRGB::DeepPink);
     }
     else {
-      pixels[i] = (CRGB::Gold);
+      pixels[i] = (NSFastLED::CRGB::Gold);
     }
   }
   which = !which;
@@ -75,7 +75,7 @@ void Norah::seeTheRainbow()
       
     strip[index][i % NUM_LEDS] = pixels[i];
   }
-  FastLED.setBrightness(100);
-  FastLED.show();
+  NSFastLED::FastLED.setBrightness(100);
+  NSFastLED::FastLED.show();
 }
 

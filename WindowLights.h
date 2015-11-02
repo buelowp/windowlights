@@ -2,8 +2,7 @@
 #define __LIGHTSTYPES_H__
 
 #include <vector>
-
-using namespace std;
+#include "FastLED-sparkcore/firmware/FastLED.h"
 
 #define SWITCH_PIN     2
 #define LED_STRIP_1    3
@@ -37,6 +36,8 @@ using namespace std;
 #define LATITUDE        42.058102
 #define LONGITUDE       87.984189
 
-extern CRGB strip[NUM_STRIPS][NUM_LEDS];
+extern NSFastLED::CRGB strip[NUM_STRIPS][NUM_LEDS];
+
+void isrService();
 
 #endif
