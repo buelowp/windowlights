@@ -39,6 +39,7 @@ NSFastLED::CRGB strip[NUM_STRIPS][NUM_LEDS];
 SunSet sun;
 int bounce;
 bool defaultProg;
+int lastMinute;
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
@@ -89,6 +90,7 @@ void setup()
 	NSFastLED::FastLED.show();
 
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+    lastMinute = Time.minute();
 }
 
 bool validRunTime()
@@ -286,6 +288,19 @@ int programOnDeck()
 	return NOHOLIDAY;
 }
 
+void printHeartbeat()
+{
+    if (lastMinute == 59 && Time.minute() >= 0) {
+        Particle.publish("Nightlight System version: " + System.version());
+        lastMinute = Time.minute();
+    }
+
+    if (Time.minute() >= lastMinute + 1) {
+        Particle.publish("Nightlight System version: " + System.version());
+        lastMinute = Time.minute();
+    }
+}
+
 void loop()
 {
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
@@ -315,5 +330,6 @@ void loop()
 			break;
 		}
 	}
+    printHeartbeat();
 }
 
