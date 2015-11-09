@@ -54,16 +54,16 @@ void Norah::startup()
 
 void Norah::action()
 {
-  for (int i = 0; i < totalPixels; i++) {
-    if ((i % 2) == which) {
-      pixels[i] = (NSFastLED::CRGB::DeepPink);
-    }
-    else {
-      pixels[i] = (NSFastLED::CRGB::Gold);
-    }
-  }
-  which = !which;
-  seeTheRainbow();
+	  for (int i = 0; i < totalPixels; i++) {
+		if ((i % 2) == which) {
+		  pixels[i] = (NSFastLED::CRGB::DeepPink);
+		}
+		else {
+		  pixels[i] = (NSFastLED::CRGB::Gold);
+		}
+	  }
+	  which = !which;
+	  seeTheRainbow();
 }
 
 void Norah::seeTheRainbow()
