@@ -22,7 +22,7 @@
  *THE SOFTWARE.
 **/
 #include "application.h"
-#include "FastLED-sparkcore/firmware/FastLED.h"
+#include "FastLED-Sparkcore/firmware/FastLED.h"
 #include "sunset/firmware/SunSet.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
@@ -34,12 +34,16 @@
 #include "Thanksgiving.h"
 #include "SunPosition.h"
 #include "Norah.h"
+#include "Maddie.h"
+#include "MeteorShower.h"
 
-NSFastLED::CRGB strip[NUM_STRIPS][NUM_LEDS];
+CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
 int bounce;
 bool defaultProg;
+bool runAnyway;
 int lastMinute;
+int activeProgram;
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
@@ -65,33 +69,6 @@ int currentTimeZone()
     return CST_OFFSET;
 }
 
-void setup()
-{
-	pinMode(SWITCH_PIN, INPUT);
-	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
-	Serial.begin(115200);
-	pinMode(D0, OUTPUT);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D3, OUTPUT);
-  
-	delay(3000);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D0>(strip[0], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D1>(strip[1], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D2>(strip[2], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D3>(strip[3], NUM_LEDS);
-	randomSeed(analogRead(A0));
-	bounce = 0;
-	defaultProg = false;
-  
-	for (int i = 0; i < NUM_LEDS; i++) {
-		strip[0][i] = NSFastLED::CRGB::Black;
-	}
-	NSFastLED::FastLED.show();
-
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-    lastMinute = Time.minute();
-}
 
 bool validRunTime()
 {
@@ -99,10 +76,13 @@ bool validRunTime()
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
 
-	if ((minsPastMidnight >= (sunrise - 60)) && (minsPastMidnight < (sunrise + 15))) {
+	if (runAnyway)
+		return true;
+
+	if ((minsPastMidnight >= 240) && (minsPastMidnight < (sunrise + 15))) {
 		return true;
 	}
-	if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1440)) {
+	if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1380)) {
 		return true;
 	}
 
@@ -126,10 +106,10 @@ void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
 		for (int j = 0; j < NUM_LEDS; j++) {
-			strip[i][j] = NSFastLED::CRGB::Black;
+			strip[i][j] = CRGB::Black;
 		}
 	}
-	NSFastLED::FastLED.show();
+	FastLED.show();
 }
 
 void runChristmas()
@@ -226,6 +206,42 @@ void runNorah()
 	}
 }
 
+void runMaddie()
+{
+	Maddie bday(TOTAL_PIXELS);
+	if (validRunTime()) {
+		bday.startup();
+
+		while (validRunTime()) {
+			bday.action();
+			delay(500);
+		}
+		pixelShutdown();
+	}
+}
+
+void runMeteorShower()
+{
+	MeteorShower meteorStrip1;
+	MeteorShower meteorStrip2;
+	MeteorShower meteorStrip3;
+	MeteorShower meteorStrip4;
+
+	while (validRunTime()) {
+		meteorStrip1.action();
+		meteorStrip2.action();
+		meteorStrip3.action();
+		meteorStrip4.action();
+
+		meteorStrip1.seeTheRainbow();
+		meteorStrip2.seeTheRainbow();
+		meteorStrip3.seeTheRainbow();
+		meteorStrip4.seeTheRainbow();
+	}
+	activeProgram = NO_PROGRAM;
+	pixelShutdown();
+}
+
 void runDefault()
 {
 	Independence iday(TOTAL_PIXELS);
@@ -243,49 +259,48 @@ void runDefault()
 
 int programOnDeck()
 {
-	if (Time.year() < 2015) {
-		return NOHOLIDAY;
-	}
-  
+	if (activeProgram != NO_PROGRAM)
+		return activeProgram;
+
 	/* Christmas lights start on the 10th of december, and go through the end of the month */
 	if ((Time.month() == 12) && (Time.day() >= 10)) {
-		return CHRISTMAS;
+		activeProgram = CHRISTMAS;
 	}
 	/* Valentines day lights only on the 14th */
 	if ((Time.month() == 2) && (Time.day() == 14)) {
-		return VALENTINES;
+		activeProgram = VALENTINES;
 	}
 	/* Independence day lights on the 4th, but also on Labor and Memorial days */
 	if ((Time.month() == 7) && (Time.day() == 4)) {
-		return INDEPENDENCE;
+		activeProgram = INDEPENDENCE;
 	}
 	if (Time.month() == 5) {
 		if ((Time.day() > 24) && (Time.weekday() == 2)) {
-			return INDEPENDENCE;
+			activeProgram = INDEPENDENCE;
 		}
 	}
 	if (Time.month() == 9) {
 		if ((Time.day() < 8) && (Time.weekday() == 2)) {
-			return INDEPENDENCE;
+			activeProgram = INDEPENDENCE;
 		}
 	}
 	/* Halloween starts on the 24th and runs through the end of the month */
 	if ((Time.month() == 10) && (Time.day() > 24)) {
-		return HALLOWEEN;
+		activeProgram = HALLOWEEN;
 	}
 	/* Start turkey day lights on the 20th and run through the end of the month */
 	if (Time.month() == 11 && Time.day() > 20) {
-		return THANKSGIVING;
+		activeProgram = THANKSGIVING;
 	}
 	/* Random other days to show a pattern */
 	if (Time.month() == 4) {
 		if (Time.day() == 14)
-			return NORAH_BDAY;
+			activeProgram = NORAH_BDAY;
 	}
 	if (Time.month() == 9 && Time.day() == 17) {
-		return MADDIE_BDAY;
+		activeProgram = MADDIE_BDAY;
 	}
-	return NOHOLIDAY;
+	activeProgram = NO_PROGRAM;
 }
 
 void printHeartbeat()
@@ -301,34 +316,112 @@ void printHeartbeat()
     }
 }
 
+int setProgram(String prog)
+{
+	runAnyway = true;
+	if (prog.equalsIgnoreCase("christmas")) {
+		activeProgram = CHRISTMAS;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("newyears")) {
+		activeProgram = NEWYEARS;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("halloween")) {
+		activeProgram = HALLOWEEN;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("thanksgiving")) {
+		activeProgram = THANKSGIVING;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("independence")) {
+		activeProgram = INDEPENDENCE;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("maddie")) {
+		activeProgram = MADDIE_BDAY;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("norah")) {
+		activeProgram = NORAH_BDAY;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("meteors")) {
+		activeProgram = METEOR_SHOWER;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("valentines")) {
+		activeProgram = VALENTINES;
+		return activeProgram;
+	}
+	runAnyway = false;
+	return NO_PROGRAM;
+}
+
+void setup()
+{
+	pinMode(SWITCH_PIN, INPUT);
+	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
+	Serial.begin(115200);
+	pinMode(D0, OUTPUT);
+	pinMode(D1, OUTPUT);
+	pinMode(D2, OUTPUT);
+	pinMode(D3, OUTPUT);
+
+	delay(3000);
+	FastLED.addLeds<NEOPIXEL, D0>(strip[0], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D1>(strip[1], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D2>(strip[2], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D3>(strip[3], NUM_LEDS);
+	randomSeed(analogRead(A0));
+	bounce = 0;
+
+	for (int i = 0; i < NUM_LEDS; i++) {
+		strip[0][i] = CRGB::Black;
+	}
+	FastLED.show();
+
+	Particle.function("program", setProgram);
+
+    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+    lastMinute = Time.minute();
+
+    activeProgram = NO_PROGRAM;
+    runAnyway = false;
+}
+
 void loop()
 {
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
 
-    if (defaultProg) {
-		runDefault();
-	}
-	else {
-		switch (programOnDeck()) {
-		case CHRISTMAS:
-			runChristmas();
-			break;
-		case VALENTINES:
-			runValentines();
-			break;
-		case INDEPENDENCE:
-			runIndependence();
-			break;
-		case HALLOWEEN:
-			runHalloween();
-			break;
-		case THANKSGIVING:
-			runThanksgiving();
-			break;
-		case NORAH_BDAY:
-			runNorah();
-			break;
-		}
+    programOnDeck();
+
+	switch (activeProgram) {
+	case CHRISTMAS:
+		runChristmas();
+		break;
+	case VALENTINES:
+		runValentines();
+		break;
+	case INDEPENDENCE:
+		runIndependence();
+		break;
+	case HALLOWEEN:
+		runHalloween();
+		break;
+	case THANKSGIVING:
+		runThanksgiving();
+		break;
+	case METEOR_SHOWER:
+		runMeteorShower();
+		break;
+	case NORAH_BDAY:
+		runNorah();
+		break;
+	case MADDIE_BDAY:
+		runMaddie();
+		break;
 	}
     printHeartbeat();
 }

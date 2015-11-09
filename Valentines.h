@@ -24,7 +24,7 @@
 #ifndef __VALENTINES_H__
 #define __VALENTINES_H__
 
-#include "FastLED-sparkcore/firmware/FastLED.h"
+#include "FastLED-Sparkcore/firmware/FastLED.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
 

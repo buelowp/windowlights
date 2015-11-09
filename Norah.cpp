@@ -23,9 +23,9 @@
 **/
 #include "Norah.h"
 
-static NSFastLED::CRGB NorahColorWheel[] = {
-		NSFastLED::CRGB::DeepPink,
-		NSFastLED::CRGB::Gold,
+static CRGB NorahColorWheel[] = {
+		CRGB::DeepPink,
+		CRGB::Gold,
 };
 
 Norah::Norah(int p)

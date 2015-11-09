@@ -24,7 +24,7 @@
 #ifndef __NORAH_H__
 #define __NORAH_H__
 
-#include "FastLED-sparkcore/firmware/FastLED.h"
+#include "FastLED-Sparkcore/firmware/FastLED.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
 
@@ -38,7 +38,7 @@ public:
   void action();
   
 private:
-  std::vector<NSFastLED::CRGB> pixels;
+  std::vector<CRGB> pixels;
   int totalPixels;
   int which;
 };
