@@ -24,7 +24,7 @@
 #ifndef __CHRISTMAS_H__
 #define __CHRISTMAS_H__
 
-#include "FastLED-sparkcore/firmware/FastLED.h"
+#include "FastLED-Sparkcore/firmware/FastLED.h"
 #include "pixelvector.h"
 #include "WindowLights.h"
 
@@ -53,7 +53,7 @@ private:
   bool scale_pixel_to_normal(int i);
   void set_new_pixel_color(int i);
   
-  vector<CHSV> pixels;
+  std::vector<CHSV> pixels;
   LedPixelMap pixelMap;
   int totalPixels;
   int numActive;
