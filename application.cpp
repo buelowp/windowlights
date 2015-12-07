@@ -35,7 +35,11 @@
 #include "SunPosition.h"
 #include "Norah.h"
 
-NSFastLED::CRGB strip[NUM_STRIPS][NUM_LEDS];
+SYSTEM_MODE(AUTOMATIC);
+
+using namespace NSFastLED;
+
+CRGB strip[NUM_STRIPS][NUM_LEDS];
 SunSet sun;
 int bounce;
 bool defaultProg;
@@ -63,34 +67,6 @@ int currentTimeZone()
     }
 
     return CST_OFFSET;
-}
-
-void setup()
-{
-	pinMode(SWITCH_PIN, INPUT);
-	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
-	Serial.begin(115200);
-	pinMode(D0, OUTPUT);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D3, OUTPUT);
-  
-	delay(3000);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D0>(strip[0], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D1>(strip[1], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D2>(strip[2], NUM_LEDS);
-	NSFastLED::FastLED.addLeds<NSFastLED::NEOPIXEL, D3>(strip[3], NUM_LEDS);
-	randomSeed(analogRead(A0));
-	bounce = 0;
-	defaultProg = false;
-  
-	for (int i = 0; i < NUM_LEDS; i++) {
-		strip[0][i] = NSFastLED::CRGB::Black;
-	}
-	NSFastLED::FastLED.show();
-
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-    lastMinute = Time.minute();
 }
 
 bool validRunTime()
@@ -126,10 +102,10 @@ void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
 		for (int j = 0; j < NUM_LEDS; j++) {
-			strip[i][j] = NSFastLED::CRGB::Black;
+			strip[i][j] = CRGB::Black;
 		}
 	}
-	NSFastLED::FastLED.show();
+	FastLED.show();
 }
 
 void runChristmas()
@@ -248,7 +224,7 @@ int programOnDeck()
 	}
   
 	/* Christmas lights start on the 10th of december, and go through the end of the month */
-	if ((Time.month() == 12) && (Time.day() >= 10)) {
+	if ((Time.month() == 12) && (Time.day() >= 1)) {
 		return CHRISTMAS;
 	}
 	/* Valentines day lights only on the 14th */
@@ -291,14 +267,43 @@ int programOnDeck()
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Nightlight System version: " + System.version());
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Nightlight System version: " + System.version());
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
         lastMinute = Time.minute();
     }
+}
+
+void setup()
+{
+	pinMode(SWITCH_PIN, INPUT);
+	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
+	Serial.begin(115200);
+	pinMode(D0, OUTPUT);
+	pinMode(D1, OUTPUT);
+	pinMode(D2, OUTPUT);
+	pinMode(D3, OUTPUT);
+
+	delay(3000);
+	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
+	randomSeed(analogRead(A0));
+	bounce = 0;
+	defaultProg = false;
+
+	for (int i = 0; i < NUM_LEDS; i++) {
+		strip[0][i] = CRGB::Black;
+	}
+	FastLED.show();
+
+    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+    lastMinute = Time.minute();
+    Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 }
 
 void loop()

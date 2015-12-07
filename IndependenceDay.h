@@ -28,6 +28,9 @@
 #include "pixelvector.h"
 #include "WindowLights.h"
 
+using namespace NSFastLED;
+using namespace std;
+
 class Independence {
 public:
   Independence(int);
@@ -38,7 +41,7 @@ public:
   void action();
   
 private:
-  std::vector<NSFastLED::CRGB> pixels;
+  vector<CRGB> pixels;
   int totalPixels;
 };
 

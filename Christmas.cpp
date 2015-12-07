@@ -27,13 +27,13 @@
 #define SCALE_SAT       2
 #define SCALE_VAL_NORM  1
 
-static NSFastLED::HSVHue ChristmasColorWheel[] = {
-		NSFastLED::HUE_RED,
-		NSFastLED::HUE_YELLOW,
-		NSFastLED::HUE_BLUE,
-		NSFastLED::HUE_GREEN,
-		NSFastLED::HUE_PURPLE,
-		NSFastLED::HUE_ORANGE,
+static HSVHue ChristmasColorWheel[] = {
+		HUE_RED,
+		HUE_YELLOW,
+		HUE_BLUE,
+		HUE_GREEN,
+		HUE_PURPLE,
+		HUE_ORANGE,
 };
 
 Christmas::Christmas(int p, int a)
@@ -51,7 +51,7 @@ Christmas::~Christmas()
 
 bool Christmas::scale_pixel_up(int i)
 {
-	NSFastLED::CHSV pixel = pixels[i];
+	CHSV pixel = pixels[i];
   if (pixel.v == 255 && pixel.s == 0)
     return true;
     
@@ -71,7 +71,7 @@ bool Christmas::scale_pixel_up(int i)
 
 bool Christmas::scale_pixel_down(int i)
 {
-	NSFastLED::CHSV pixel = pixels[i];
+	CHSV pixel = pixels[i];
   if (pixel.v == 0 && pixel.s == 255)
     return true;
     
@@ -91,7 +91,7 @@ bool Christmas::scale_pixel_down(int i)
 
 bool Christmas::scale_pixel_to_normal(int i)
 {
-	NSFastLED::CHSV pixel = pixels[i];
+	CHSV pixel = pixels[i];
   if ((pixel.v + SCALE_VAL_NORM) >= NORMAL_BRIGHT) {
     pixel.v = NORMAL_BRIGHT;
     return true;
@@ -113,7 +113,7 @@ void Christmas::set_new_pixel_color(int i)
 void Christmas::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
-	  NSFastLED::CHSV c;
+	  CHSV c;
     c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
     c.s = 255;
     c.v = NORMAL_BRIGHT;
@@ -128,79 +128,73 @@ void Christmas::startup()
  */
 void Christmas::setFirstActive(int c)
 {
-  /*
-  int count = 0;
-  bool found = false;
+	int count = 0;
+	bool found = false;
   
-  while (count < c) {
-    int pixel = random(0, TOTAL_PIXELS);
-    for (int j = 0; j < pixelMap.size(); j++) {
-      if (pixelMap[j] == pixel)
-        found = true;
-        break;
-    }
-    if (!found) {
-      pixelMap.addNewPixel(pixel, GOING_UP);
-      found = false;
-      count++;
-    }
-  }
-  */
-  pixelMap.addNewPixel(1, GOING_UP);
-  pixelMap.addNewPixel(2, GOING_UP);
-  pixelMap.addNewPixel(3, GOING_UP);
-  pixelMap.addNewPixel(4, GOING_UP);
-  pixelMap.addNewPixel(5, GOING_UP);
+	while (count < c) {
+		int pixel = random(0, TOTAL_PIXELS);
+		for (int j = 0; j < pixelMap.size(); j++) {
+			if (pixelMap[j] == pixel) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			pixelMap.addNewPixel(pixel, GOING_UP);
+			count++;
+		}
+		found = false;
+	}
 }
 
 void Christmas::action()
 {
-  for (int i = 0; i <= pixelMap.size(); i++) {
-    switch (pixelMap.pixelDir(i)) {
-    case GOING_UP:
-      if (scale_pixel_up(pixelMap[i]))
-        pixelMap.setPixelDir(i, GOING_DOWN);
-
-      break;
-    case GOING_DOWN:
-      if (scale_pixel_down(pixelMap[i])) {
-        set_new_pixel_color(pixelMap[i]);
-        pixelMap.setPixelDir(i, RETURN_TO_NORM);
-      }
-      break;
-    case RETURN_TO_NORM:
-      if (scale_pixel_to_normal(pixelMap[i]))
-        pixelMap.removePixel(i);
-        
-      break;
-    }    
-  }
-  seeTheRainbow();
+	for (int i = 0; i <= pixelMap.size(); i++) {
+		switch (pixelMap.pixelDir(i)) {
+		case GOING_UP:
+			if (scale_pixel_up(pixelMap[i])) {
+				pixelMap.setPixelDir(i, GOING_DOWN);
+			}
+			break;
+		case GOING_DOWN:
+			if (scale_pixel_down(pixelMap[i])) {
+				set_new_pixel_color(pixelMap[i]);
+				pixelMap.setPixelDir(i, RETURN_TO_NORM);
+			}
+			break;
+		case RETURN_TO_NORM:
+			if (scale_pixel_to_normal(pixelMap[i])) {
+				pixelMap.removePixel(i);
+			}
+			break;
+		}
+	}
+	seeTheRainbow();
 }
 
 void Christmas::addOne()
 {
-  int pixel = random(0, TOTAL_PIXELS);
+	int pixel = random(0, TOTAL_PIXELS);
   
-  for (int i = 0; i < pixelMap.size(); i++) {
-    if (pixelMap[i] == pixel)
-      return;
-  }
-  if (pixelMap.size() < NUM_ACTIVE) {
-    pixelMap.addNewPixel(pixel, GOING_UP);
-  }
+	for (int i = 0; i < pixelMap.size(); i++) {
+		if (pixelMap[i] == pixel)
+			return;
+	}
+	if (pixelMap.size() < NUM_ACTIVE) {
+		pixelMap.addNewPixel(pixel, GOING_UP);
+	}
 }
 
 void Christmas::seeTheRainbow()
 {
-  for (int i = 0; i < NUM_STRIPS; i++) {
-	  NSFastLED::CHSV s[NUM_LEDS];
-    for (int j = 0; j < NUM_LEDS; j++) {
-      s[j] = pixels[(i + 1) * j];
-    }
-    NSFastLED::hsv2rgb_rainbow(s, strip[i], NUM_LEDS);
-  }
-  NSFastLED::FastLED.show();
+	for (int i = 0; i < NUM_STRIPS; i++) {
+		CHSV s[NUM_LEDS];
+		for (int j = 0; j < NUM_LEDS; j++) {
+			s[j] = pixels[(i + 1) * j];
+		}
+		hsv2rgb_rainbow(s, strip[i], NUM_LEDS);
+	}
+	FastLED.show();
 }
 
 

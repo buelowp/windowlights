@@ -32,6 +32,9 @@
 #define GOING_DOWN      1
 #define RETURN_TO_NORM  2
 
+using namespace NSFastLED;
+using namespace std;
+
 class Christmas {
 public:
   Christmas(int, int);
@@ -42,7 +45,7 @@ public:
   void setFirstActive(int);
   void addOne();
   void seeTheRainbow();
-  NSFastLED::CHSV getNextPixel();
+  CHSV getNextPixel();
   
 private:
   bool scale_pixel_up(int i);
@@ -50,7 +53,7 @@ private:
   bool scale_pixel_to_normal(int i);
   void set_new_pixel_color(int i);
   
-  std::vector<NSFastLED::CHSV> pixels;
+  vector<CHSV> pixels;
   LedPixelMap pixelMap;
   int totalPixels;
   int numActive;
