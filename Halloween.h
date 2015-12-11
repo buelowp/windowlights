@@ -25,8 +25,10 @@
 #define __HALLOWEEN_H__
 
 #include "FastLED-Sparkcore/firmware/FastLED.h"
-#include "pixelvector.h"
 #include "WindowLights.h"
+
+using namespace std;
+using namespace NSFastLED;
 
 class Halloween {
 public:
@@ -39,7 +41,7 @@ public:
   void action();
   
 private:
-  std::vector<NSFastLED::CRGB> pixels;
+  vector<CRGB> pixels;
   int which;
   int totalPixels;
 };

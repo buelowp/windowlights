@@ -23,14 +23,14 @@
  */
 #include "Thanksgiving.h"
 
-static NSFastLED::CRGB ThanksgivingColorWheel[] = {
-		NSFastLED::CRGB::Red,
-		NSFastLED::CRGB::OrangeRed,
-		NSFastLED::CRGB::Purple,
-		NSFastLED::CRGB::Green,
-		NSFastLED::CRGB::Blue,
-		NSFastLED::CRGB::Yellow,
-		NSFastLED::CRGB::White,
+static CRGB ThanksgivingColorWheel[] = {
+		CRGB::Red,
+		CRGB::OrangeRed,
+		CRGB::Purple,
+		CRGB::Green,
+		CRGB::Blue,
+		CRGB::Yellow,
+		CRGB::White,
 };
 
 Thanksgiving::Thanksgiving(int p)
@@ -45,7 +45,7 @@ Thanksgiving::~Thanksgiving()
 
 void Thanksgiving::startup()
 {
-  NSFastLED::CRGB c;
+  CRGB c;
 
   for (int i = 0; i < NUM_STRIPS; i++) {
     c = ThanksgivingColorWheel[random(0, 7)];
@@ -59,7 +59,7 @@ void Thanksgiving::startup()
 void Thanksgiving::action()
 {
   int window = random(0, 3);
-  NSFastLED::CRGB c = ThanksgivingColorWheel[random(0, 7)];
+  CRGB c = ThanksgivingColorWheel[random(0, 7)];
 
   for (int j = 0; j < LEDS_PER_STRIP; j++) {
     strip[window][j] = c;
@@ -69,7 +69,7 @@ void Thanksgiving::action()
 
 void Thanksgiving::seeTheRainbow()
 {
-	NSFastLED::FastLED.setBrightness(100);
-	NSFastLED::FastLED.show();
+	FastLED.setBrightness(100);
+	FastLED.show();
 }
 

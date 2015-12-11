@@ -25,7 +25,6 @@
 #define __INDEPENDENCE_H__
 
 #include "FastLED-Sparkcore/firmware/FastLED.h"
-#include "pixelvector.h"
 #include "WindowLights.h"
 
 using namespace NSFastLED;

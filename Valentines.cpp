@@ -37,10 +37,10 @@ void Valentines::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == 0) {
-      pixels.push_back(NSFastLED::CRGB::Red);
+      pixels.push_back(CRGB::Red);
     }
     else {
-      pixels.push_back(NSFastLED::CRGB::White);
+      pixels.push_back(CRGB::White);
     }
     seeTheRainbow();
     which = 1;
@@ -53,10 +53,10 @@ void Valentines::action()
     case 0:
       for (int i = 0; i < totalPixels; i++) {
         if ((i % 2) == 1) {
-          pixels[i] = NSFastLED::CRGB::Red;
+          pixels[i] = CRGB::Red;
         }
         else {
-          pixels[i] = NSFastLED::CRGB::White;
+          pixels[i] = CRGB::White;
         }
       }
       which = 1;
@@ -64,10 +64,10 @@ void Valentines::action()
     case 1:
       for (int i = 0; i < totalPixels; i++) {
         if ((i % 2) == 0) {
-          pixels[i] = NSFastLED::CRGB::Red;
+          pixels[i] = CRGB::Red;
         }
         else {
-          pixels[i] = NSFastLED::CRGB::White;
+          pixels[i] = CRGB::White;
         }
       }
       which = 0;
@@ -85,7 +85,7 @@ void Valentines::seeTheRainbow()
       
     strip[index][i % NUM_LEDS] = pixels[i];
   }
-  NSFastLED::FastLED.setBrightness(100);
-  NSFastLED::FastLED.show();
+  FastLED.setBrightness(100);
+  FastLED.show();
 }
 

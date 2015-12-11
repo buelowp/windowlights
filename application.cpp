@@ -24,7 +24,6 @@
 #include "application.h"
 #include "FastLED-Sparkcore/firmware/FastLED.h"
 #include "sunset/firmware/SunSet.h"
-#include "pixelvector.h"
 #include "WindowLights.h"
 
 #include "Christmas.h"
@@ -50,6 +49,8 @@ int lastMinute;
 int activeProgram;
 bool running;
 bool firstrun;
+
+Christmas wink(NUM_LEDS, NUM_ACTIVE);
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
@@ -81,6 +82,7 @@ bool validRunTime()
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
 
+	return true;
 	if (runAnyway)
 		return true;
 
@@ -119,16 +121,13 @@ void pixelShutdown()
 
 void runChristmas()
 {
-	Christmas wink(NUM_LEDS, NUM_ACTIVE);
-
 	if (validRunTime() && !running) {
 		running = true;
 		wink.startup();
-		wink.setFirstActive(5);
+		wink.setFirstActive(20);
 		wink.seeTheRainbow();
 	}
 	if (validRunTime() && running) {
-		Serial.println("Running wink.action()");
 		wink.action();
 		if (random(0, 3) == 2)
 			wink.addOne();
@@ -404,6 +403,7 @@ void setup()
     running = false;
     firstrun = false;
     Serial.begin(115200);
+    Serial.println("Startup finished");
 }
 
 void loop()

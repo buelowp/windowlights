@@ -29,12 +29,12 @@
 
 #define FLASHES 15
 
-static NSFastLED::CRGB HalloweenColorWheel[] = {
-	NSFastLED::CRGB::Red,
-	NSFastLED::CRGB::OrangeRed,
-	NSFastLED::CRGB::Purple,
-	NSFastLED::CRGB::Green,
-	NSFastLED::CRGB::Blue,
+static CRGB HalloweenColorWheel[] = {
+	CRGB::Red,
+	CRGB::OrangeRed,
+	CRGB::Purple,
+	CRGB::Green,
+	CRGB::Blue,
 };
 
 Halloween::Halloween(int p)
@@ -49,7 +49,7 @@ Halloween::~Halloween()
 
 void Halloween::startup()
 {
-  NSFastLED::CRGB c;
+  CRGB c;
 
   for (int i = 0; i < NUM_STRIPS; i++) {
     c = HalloweenColorWheel[random(0, 5)];
@@ -67,7 +67,7 @@ void Halloween::startup()
 */
 void Halloween::lightning(int window)
 {
-	NSFastLED::CHSV flasher[NUM_LEDS];
+	CHSV flasher[NUM_LEDS];
   uint8_t dimmer;
   for (int flashCounter = 0; flashCounter < random(6,FLASHES); flashCounter++)
   {
@@ -77,16 +77,16 @@ void Halloween::lightning(int window)
       dimmer = random(1,3); // return strokes are brighter than the leader
 
     for (int i = 0; i < NUM_LEDS; i++) {
-      flasher[i] = NSFastLED::CHSV(255, 0, 255/dimmer);
+      flasher[i] = CHSV(255, 0, 255/dimmer);
     }
-    NSFastLED::hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
-    NSFastLED::FastLED.show();
+    hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
+    FastLED.show();
     delay(random(4,10)); // each flash only lasts 4-10 milliseconds
     for (int i = 0; i < NUM_LEDS; i++) {
-      flasher[i] = NSFastLED::CHSV(255, 0, 0);
+      flasher[i] = CHSV(255, 0, 0);
     }
-    NSFastLED::hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
-    NSFastLED::FastLED.show();
+    hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
+    FastLED.show();
     
     if (flashCounter == 0)
       delay (150); // longer delay until next flash after the leader
@@ -98,7 +98,7 @@ void Halloween::lightning(int window)
 void Halloween::action()
 {
   int window = random(0, 3);
-  NSFastLED::CRGB c = HalloweenColorWheel[random(0, 5)];
+  CRGB c = HalloweenColorWheel[random(0, 5)];
   
   for (int j = 0; j < LEDS_PER_STRIP; j++) {
     strip[window][j] = c;
@@ -108,7 +108,7 @@ void Halloween::action()
 
 void Halloween::seeTheRainbow()
 {
-	NSFastLED::FastLED.setBrightness(100);
-	NSFastLED::FastLED.show();
+	FastLED.setBrightness(100);
+	FastLED.show();
 }
 

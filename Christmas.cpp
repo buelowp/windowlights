@@ -91,22 +91,24 @@ bool Christmas::scale_pixel_down(int i)
 bool Christmas::scale_pixel_to_normal(int i)
 {
 	CHSV pixel = pixels[i];
-  if ((pixel.v + SCALE_VAL_NORM) >= NORMAL_BRIGHT) {
-    pixel.v = NORMAL_BRIGHT;
-    return true;
-  }
+	if ((pixel.v + SCALE_VAL_NORM) >= NORMAL_BRIGHT) {
+		pixel.v = NORMAL_BRIGHT;
+		String dbg(String(__FUNCTION__) + ": Scaled pixel " + String(i) + " back to normal bright");
+		Serial.println(dbg);
+		return true;
+	}
   
-  pixel.v += SCALE_VAL_NORM;
+	pixel.v += SCALE_VAL_NORM;
   
-  pixels[i] = pixel;
-  return false;
+	pixels[i] = pixel;
+	return false;
 }
 
 void Christmas::set_new_pixel_color(int i)
 {
-  pixels[i].v = 0;
-  pixels[i].h = ChristmasColorWheel[random(0, NUM_COLORS)];
-  pixels[i].s = 255;
+	pixels[i].v = 0;
+	pixels[i].h = ChristmasColorWheel[random(0, NUM_COLORS)];
+	pixels[i].s = 255;
 }
 
 void Christmas::startup()
@@ -130,31 +132,26 @@ void Christmas::startup()
 void Christmas::setFirstActive(int c)
 {
 	int count = 0;
-	bool found = false;
+	std::pair<std::map<int,int>::iterator,bool> ret;
   
 	while (count < c) {
 		int pixel = random(0, NUM_LEDS);
-		for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
-			if (it->first == pixel) {
-				found = true;
-				break;
-			}
+		ret = pixelMap.insert(std::pair<int,int>(pixel, GOING_UP));
+		if (ret.second == false) {
+			String err(String(__FUNCTION__) + ": Pixel " + String(pixel) + " already exists");
+			Serial.println(err);
 		}
-		if (!found) {
-			String debug("Adding pixel " + String(pixel) + " to the pixelMap");
+		else {
+			String debug(String(__FUNCTION__) + ": Adding pixel " + String(pixel) + " to the pixelMap for size " + String(pixelMap.size()));
 			Serial.println(debug);
-			pixelMap[pixel] = GOING_UP;
-			count++;
 		}
-		found = false;
+		count++;
 	}
 }
 
 void Christmas::action()
 {
 	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
-		String debug("Pixel " + String(it->first) + " is direction " + String(it->second));
-		Serial.println(debug);
 		switch (it->second) {
 		case GOING_UP:
 			if (scale_pixel_up(it->first)) {
@@ -169,7 +166,10 @@ void Christmas::action()
 			break;
 		case RETURN_TO_NORM:
 			if (scale_pixel_to_normal(it->first)) {
-				pixelMap.erase(it);
+				int pixel = it->first;
+				String gd1(String(__FUNCTION__) + ": Removing pixel " + String(pixel));
+				Serial.println(gd1);
+				pixelMap.erase(pixel);
 			}
 			break;
 		}
@@ -180,15 +180,18 @@ void Christmas::action()
 void Christmas::addOne()
 {
 	int pixel = random(0, NUM_LEDS);
+	std::pair<std::map<int,int>::iterator,bool> ret;
 
-	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
-		if (it->first == pixel)
-			return;
-	}
 	if (pixelMap.size() < NUM_ACTIVE) {
-		String debug("Adding " + String(pixel) + " to the list for size " + String(pixelMap.size()));
-		Serial.println(debug);
-		pixelMap[pixel] = GOING_UP;
+		ret = pixelMap.insert(std::pair<int,int>(pixel, GOING_UP));
+		if (ret.second == false) {
+			String err(String(__FUNCTION__) + ": Pixel " + String(pixel) + " already exists");
+			Serial.println(err);
+		}
+		else {
+			String debug(String(__FUNCTION__) + ": Adding pixel " + String(pixel) + " to the pixelMap for size " + String(pixelMap.size()));
+			Serial.println(debug);
+		}
 	}
 }
 

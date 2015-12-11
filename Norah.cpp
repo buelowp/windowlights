@@ -42,10 +42,10 @@ void Norah::startup()
 {
   for (int i = 0; i < totalPixels; i++) {
     if ((i % 2) == 0) {
-      pixels.push_back(NSFastLED::CRGB::DeepPink);
+      pixels.push_back(CRGB::DeepPink);
     }
     else {
-      pixels.push_back(NSFastLED::CRGB::Gold);
+      pixels.push_back(CRGB::Gold);
     }
   }
     
@@ -56,10 +56,10 @@ void Norah::action()
 {
 	  for (int i = 0; i < totalPixels; i++) {
 		if ((i % 2) == which) {
-		  pixels[i] = (NSFastLED::CRGB::DeepPink);
+		  pixels[i] = (CRGB::DeepPink);
 		}
 		else {
-		  pixels[i] = (NSFastLED::CRGB::Gold);
+		  pixels[i] = (CRGB::Gold);
 		}
 	  }
 	  which = !which;
@@ -75,7 +75,7 @@ void Norah::seeTheRainbow()
       
     strip[index][i % NUM_LEDS] = pixels[i];
   }
-  NSFastLED::FastLED.setBrightness(100);
-  NSFastLED::FastLED.show();
+  FastLED.setBrightness(100);
+  FastLED.show();
 }
 

@@ -25,7 +25,6 @@
 #define __CHRISTMAS_H__
 
 #include "FastLED-Sparkcore/firmware/FastLED.h"
-#include "pixelvector.h"
 #include "WindowLights.h"
 
 #define GOING_UP        0
