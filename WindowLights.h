@@ -2,22 +2,21 @@
 #define __LIGHTSTYPES_H__
 
 #include <vector>
+#include <map>
 #include "FastLED-Sparkcore/firmware/FastLED.h"
 
-#define SWITCH_PIN     2
-#define LED_STRIP_1    3
-#define LED_STRIP_2    4
-#define LED_STRIP_3    5
-#define LED_STRIP_4    6
-#define GPS_RX_PIN     7
+#define SWITCH_PIN     D4
+#define LED_STRIP_1    D0
+#define LED_STRIP_2    D1
+#define LED_STRIP_3    D2
+#define LED_STRIP_4    D3
 
 #define LEDS_PER_STRIP  114
-#define NUM_STRIPS      1
+#define NUM_STRIPS      4
 #define NUM_LEDS        (LEDS_PER_STRIP * NUM_STRIPS)
 #define NUM_ACTIVE      20
 #define NORMAL_BRIGHT   100
 #define NUM_COLORS      6
-#define TOTAL_PIXELS    (NUM_LEDS * NUM_STRIPS)
 #define NON_PIXEL       -1
 
 #define CHRISTMAS      100
@@ -41,7 +40,7 @@
 #define APP_VERSION		"1.0"
 using namespace NSFastLED;
 
-extern CRGB strip[NUM_STRIPS][NUM_LEDS];
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 
 void isrService();
 

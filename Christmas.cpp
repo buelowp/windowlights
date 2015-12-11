@@ -38,11 +38,10 @@ static HSVHue ChristmasColorWheel[] = {
 
 Christmas::Christmas(int p, int a)
 {
-  pixelMap.setMaxElements(a);
-  totalPixels = p;
-  numActive = a;
-  index = 0;
-  swap = random(2, 9);
+	totalPixels = p;
+	numActive = a;
+	index = 0;
+	swap = random(2, 9);
 }
 
 Christmas::~Christmas()
@@ -112,13 +111,15 @@ void Christmas::set_new_pixel_color(int i)
 
 void Christmas::startup()
 {
-  for (int i = 0; i < totalPixels; i++) {
-	  CHSV c;
-    c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
-    c.s = 255;
-    c.v = NORMAL_BRIGHT;
-    pixels.push_back(c);
-  }
+	for (int i = 0; i < totalPixels; i++) {
+		CHSV c;
+		c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
+		c.s = 255;
+		c.v = NORMAL_BRIGHT;
+		pixels.push_back(c);
+	}
+	String debug("Christmas startup added " + String(pixels.size()) + " pixels");
+	Serial.println(debug);
 }
 
 /**
@@ -132,15 +133,17 @@ void Christmas::setFirstActive(int c)
 	bool found = false;
   
 	while (count < c) {
-		int pixel = random(0, TOTAL_PIXELS);
-		for (int j = 0; j < pixelMap.size(); j++) {
-			if (pixelMap[j] == pixel) {
+		int pixel = random(0, NUM_LEDS);
+		for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
+			if (it->first == pixel) {
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			pixelMap.addNewPixel(pixel, GOING_UP);
+			String debug("Adding pixel " + String(pixel) + " to the pixelMap");
+			Serial.println(debug);
+			pixelMap[pixel] = GOING_UP;
 			count++;
 		}
 		found = false;
@@ -149,22 +152,24 @@ void Christmas::setFirstActive(int c)
 
 void Christmas::action()
 {
-	for (int i = 0; i <= pixelMap.size(); i++) {
-		switch (pixelMap.pixelDir(i)) {
+	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
+		String debug("Pixel " + String(it->first) + " is direction " + String(it->second));
+		Serial.println(debug);
+		switch (it->second) {
 		case GOING_UP:
-			if (scale_pixel_up(pixelMap[i])) {
-				pixelMap.setPixelDir(i, GOING_DOWN);
+			if (scale_pixel_up(it->first)) {
+				pixelMap[it->first] = GOING_DOWN;
 			}
 			break;
 		case GOING_DOWN:
-			if (scale_pixel_down(pixelMap[i])) {
-				set_new_pixel_color(pixelMap[i]);
-				pixelMap.setPixelDir(i, RETURN_TO_NORM);
+			if (scale_pixel_down(it->first)) {
+				set_new_pixel_color(it->first);
+				pixelMap[it->first] = RETURN_TO_NORM;
 			}
 			break;
 		case RETURN_TO_NORM:
-			if (scale_pixel_to_normal(pixelMap[i])) {
-				pixelMap.removePixel(i);
+			if (scale_pixel_to_normal(it->first)) {
+				pixelMap.erase(it);
 			}
 			break;
 		}
@@ -174,14 +179,16 @@ void Christmas::action()
 
 void Christmas::addOne()
 {
-	int pixel = random(0, TOTAL_PIXELS);
-  
-	for (int i = 0; i < pixelMap.size(); i++) {
-		if (pixelMap[i] == pixel)
+	int pixel = random(0, NUM_LEDS);
+
+	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
+		if (it->first == pixel)
 			return;
 	}
 	if (pixelMap.size() < NUM_ACTIVE) {
-		pixelMap.addNewPixel(pixel, GOING_UP);
+		String debug("Adding " + String(pixel) + " to the list for size " + String(pixelMap.size()));
+		Serial.println(debug);
+		pixelMap[pixel] = GOING_UP;
 	}
 }
 
@@ -189,10 +196,10 @@ void Christmas::seeTheRainbow()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
 		CHSV s[NUM_LEDS];
-		for (int j = 0; j < NUM_LEDS; j++) {
+		for (int j = 0; j < LEDS_PER_STRIP; j++) {
 			s[j] = pixels[(i + 1) * j];
 		}
-		hsv2rgb_rainbow(s, strip[i], NUM_LEDS);
+		hsv2rgb_rainbow(s, strip[i], LEDS_PER_STRIP);
 	}
 	FastLED.show();
 }

@@ -41,13 +41,15 @@ SYSTEM_MODE(AUTOMATIC);
 
 using namespace NSFastLED;
 
-CRGB strip[NUM_STRIPS][NUM_LEDS];
+CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
 int bounce;
 bool defaultProg;
 bool runAnyway;
 int lastMinute;
 int activeProgram;
+bool running;
+bool firstrun;
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
@@ -66,8 +68,8 @@ int currentTimeZone()
     if (Time.month() == 11) {
         if ((Time.day() == _usDSTEnd[Time.year() -  TIME_BASE_YEAR]) && Time.hour() <=2)
             return DST_OFFSET;
-        if (Time.day() < _usDSTEnd[Time.year() -  TIME_BASE_YEAR])
-            return DST_OFFSET;
+        if (Time.day() > _usDSTEnd[Time.year() -  TIME_BASE_YEAR])
+            return CST_OFFSET;
     }
 
     return CST_OFFSET;
@@ -117,27 +119,30 @@ void pixelShutdown()
 
 void runChristmas()
 {
-	Christmas wink(TOTAL_PIXELS, NUM_ACTIVE);
-  
-	if (validRunTime()) {
+	Christmas wink(NUM_LEDS, NUM_ACTIVE);
+
+	if (validRunTime() && !running) {
+		running = true;
 		wink.startup();
 		wink.setFirstActive(5);
 		wink.seeTheRainbow();
-  
-		while (validRunTime()) {
-			wink.action();
-			if (random(0, 3) == 2)
-				wink.addOne();
-        
-			delay(25);
-		}
+	}
+	if (validRunTime() && running) {
+		Serial.println("Running wink.action()");
+		wink.action();
+		if (random(0, 3) == 2)
+			wink.addOne();
+		delay(25);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runValentines()
 {
-	Valentines vday(TOTAL_PIXELS);
+	Valentines vday(NUM_LEDS);
 	if (validRunTime()) {
 		vday.startup();
   
@@ -151,7 +156,7 @@ void runValentines()
 
 void runIndependence()
 {
-	Independence iday(TOTAL_PIXELS);
+	Independence iday(NUM_LEDS);
 	if (validRunTime()) {
 		iday.startup();
     
@@ -165,7 +170,7 @@ void runIndependence()
 
 void runHalloween()
 {
-	Halloween hday(TOTAL_PIXELS);
+	Halloween hday(NUM_LEDS);
 
 	if (validRunTime()) {
 		hday.startup();
@@ -183,7 +188,7 @@ void runHalloween()
 
 void runThanksgiving()
 {
-	Thanksgiving tday(TOTAL_PIXELS);
+	Thanksgiving tday(NUM_LEDS);
 	if (validRunTime()) {
 		tday.startup();
     
@@ -197,7 +202,7 @@ void runThanksgiving()
 
 void runNorah()
 {
-	Norah bday(TOTAL_PIXELS);
+	Norah bday(NUM_LEDS);
 	if (validRunTime()) {
 		bday.startup();
     
@@ -211,7 +216,7 @@ void runNorah()
 
 void runMaddie()
 {
-	Maddie bday(TOTAL_PIXELS);
+	Maddie bday(NUM_LEDS);
 	if (validRunTime()) {
 		bday.startup();
 
@@ -247,7 +252,7 @@ void runMeteorShower()
 
 void runDefault()
 {
-	Independence iday(TOTAL_PIXELS);
+	Independence iday(NUM_LEDS);
 	if (validRunTime()) {
 		iday.startup();
     
@@ -266,55 +271,59 @@ void programOnDeck()
 		return;
 
 	/* Christmas lights start on the 10th of december, and go through the end of the month */
-	if ((Time.month() == 12) && (Time.day() >= 1)) {
+	if (Time.month() == 12) {
 		activeProgram = CHRISTMAS;
 	}
 	/* Valentines day lights only on the 14th */
-	if ((Time.month() == 2) && (Time.day() == 14)) {
+	else if ((Time.month() == 2) && (Time.day() == 14)) {
 		activeProgram = VALENTINES;
 	}
 	/* Independence day lights on the 4th, but also on Labor and Memorial days */
-	if ((Time.month() == 7) && (Time.day() == 4)) {
+	else if ((Time.month() == 7) && (Time.day() == 4)) {
 		activeProgram = INDEPENDENCE;
 	}
-	if (Time.month() == 5) {
+	else if (Time.month() == 5) {
 		if ((Time.day() > 24) && (Time.weekday() == 2)) {
 			activeProgram = INDEPENDENCE;
 		}
 	}
-	if (Time.month() == 9) {
+	else if (Time.month() == 9) {
 		if ((Time.day() < 8) && (Time.weekday() == 2)) {
 			activeProgram = INDEPENDENCE;
 		}
 	}
 	/* Halloween starts on the 24th and runs through the end of the month */
-	if ((Time.month() == 10) && (Time.day() > 24)) {
+	else if ((Time.month() == 10) && (Time.day() > 24)) {
 		activeProgram = HALLOWEEN;
 	}
 	/* Start turkey day lights on the 20th and run through the end of the month */
-	if (Time.month() == 11 && Time.day() > 20) {
+	else if (Time.month() == 11 && Time.day() > 20) {
 		activeProgram = THANKSGIVING;
 	}
 	/* Random other days to show a pattern */
-	if (Time.month() == 4) {
+	else if (Time.month() == 4) {
 		if (Time.day() == 14)
 			activeProgram = NORAH_BDAY;
 	}
-	if (Time.month() == 9 && Time.day() == 17) {
+	else if (Time.month() == 9 && Time.day() == 17) {
 		activeProgram = MADDIE_BDAY;
 	}
-	activeProgram = NO_PROGRAM;
+	else
+		activeProgram = NO_PROGRAM;
 }
 
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
         Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
+        Particle.publish("Active Program", String("Active Program: " + activeProgram));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
         Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
+        Particle.publish("Active Program", String("Active Program: " + String(activeProgram)));
+        Particle.publish("Current Date", String("Current Date:" + String(Time.month()) + "-" + String(Time.day())));
         lastMinute = Time.minute();
     }
 }
@@ -386,18 +395,22 @@ void setup()
 	}
 	FastLED.show();
 
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
     lastMinute = Time.minute();
     Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
     activeProgram = NO_PROGRAM;
     runAnyway = false;
+    running = false;
+    firstrun = false;
+    Serial.begin(115200);
 }
 
 void loop()
 {
+    Time.zone(currentTimeZone());
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
 
     programOnDeck();
 
