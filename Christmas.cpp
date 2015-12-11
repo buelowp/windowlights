@@ -34,6 +34,7 @@ static HSVHue ChristmasColorWheel[] = {
 		HUE_GREEN,
 		HUE_PURPLE,
 		HUE_ORANGE,
+		HUE_PINK,
 };
 
 Christmas::Christmas(int p, int a)
@@ -107,7 +108,7 @@ bool Christmas::scale_pixel_to_normal(int i)
 void Christmas::set_new_pixel_color(int i)
 {
 	pixels[i].v = 0;
-	pixels[i].h = ChristmasColorWheel[random(0, NUM_COLORS)];
+	pixels[i].h = ChristmasColorWheel[random(0, NUM_XMAS_COLORS)];
 	pixels[i].s = 255;
 }
 
@@ -115,7 +116,7 @@ void Christmas::startup()
 {
 	for (int i = 0; i < totalPixels; i++) {
 		CHSV c;
-		c.h = ChristmasColorWheel[random(0, NUM_COLORS)];
+		c.h = ChristmasColorWheel[random(0, NUM_XMAS_COLORS)];
 		c.s = 255;
 		c.v = NORMAL_BRIGHT;
 		pixels.push_back(c);

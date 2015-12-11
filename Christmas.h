@@ -30,6 +30,7 @@
 #define GOING_UP        0
 #define GOING_DOWN      1
 #define RETURN_TO_NORM  2
+#define NUM_XMAS_COLORS	7
 
 using namespace NSFastLED;
 using namespace std;

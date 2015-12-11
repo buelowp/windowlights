@@ -82,7 +82,6 @@ bool validRunTime()
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
 
-	return true;
 	if (runAnyway)
 		return true;
 
