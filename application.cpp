@@ -111,7 +111,7 @@ void isrService()
 void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
-		for (int j = 0; j < NUM_LEDS; j++) {
+		for (int j = 0; j < LEDS_PER_STRIP; j++) {
 			strip[i][j] = CRGB::Black;
 		}
 	}
@@ -320,8 +320,6 @@ void printHeartbeat()
 
     if (Time.minute() >= lastMinute + 1) {
         Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
-        Particle.publish("Active Program", String("Active Program: " + String(activeProgram)));
-        Particle.publish("Current Date", String("Current Date:" + String(Time.month()) + "-" + String(Time.day())));
         lastMinute = Time.minute();
     }
 }

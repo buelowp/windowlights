@@ -14,7 +14,7 @@
 #define LEDS_PER_STRIP  114
 #define NUM_STRIPS      4
 #define NUM_LEDS        (LEDS_PER_STRIP * NUM_STRIPS)
-#define NUM_ACTIVE      30
+#define NUM_ACTIVE      20
 #define NORMAL_BRIGHT   80
 #define NUM_COLORS      6
 #define NON_PIXEL       -1
