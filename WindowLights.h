@@ -37,7 +37,8 @@
 #define LATITUDE        42.058102
 #define LONGITUDE       87.984189
 
-#define APP_VERSION		"1.0"
+#define APP_VERSION		"1.1"
+
 using namespace NSFastLED;
 
 extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];

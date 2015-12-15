@@ -51,6 +51,16 @@ bool running;
 bool firstrun;
 
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
+Valentines vday(NUM_LEDS);
+Independence iday(NUM_LEDS);
+Halloween hday(NUM_LEDS);
+Thanksgiving tday(NUM_LEDS);
+Norah nbday(NUM_LEDS);
+Maddie mbday(NUM_LEDS);
+MeteorShower meteorStrip1;
+MeteorShower meteorStrip2;
+MeteorShower meteorStrip3;
+MeteorShower meteorStrip4;
 
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
@@ -140,127 +150,125 @@ void runChristmas()
 
 void runValentines()
 {
-	Valentines vday(NUM_LEDS);
-	if (validRunTime()) {
+	if (validRunTime() && !running) {
+		running = true;
 		vday.startup();
-  
-		while (validRunTime()) {
-			vday.action();
-			delay(500);
-		}
+	}
+	if (validRunTime() && running) {
+		vday.action();
+		delay(500);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runIndependence()
 {
-	Independence iday(NUM_LEDS);
-	if (validRunTime()) {
+	if (validRunTime() && !running) {
+		running = true;
 		iday.startup();
-    
-		while (validRunTime()) {
-			iday.action();
-			delay(500);
-		}
+	}
+	if (validRunTime() && running) {
+		iday.action();
+		delay(500);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runHalloween()
 {
-	Halloween hday(NUM_LEDS);
-
-	if (validRunTime()) {
+	if (validRunTime() && !running) {
+		running = true;
 		hday.startup();
-    
-		while (validRunTime()) {
-			hday.action();
-			if (random(0, 50) == 23) {
-				hday.lightning(random(0, NUM_STRIPS));
-			}
-			delay(1000);
+	}
+	if (validRunTime() && running) {
+		hday.action();
+		if (random(0, 50) == 23) {
+			hday.lightning(random(0, NUM_STRIPS));
 		}
+		delay(1000);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runThanksgiving()
 {
-	Thanksgiving tday(NUM_LEDS);
-	if (validRunTime()) {
+	if (validRunTime() && !running) {
+		running = true;
 		tday.startup();
-    
-		while (validRunTime()) {
-			tday.action();
-			delay(1000);
-		}
+	}
+	if (validRunTime() && running) {
+		tday.action();
+		delay(1000);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runNorah()
 {
-	Norah bday(NUM_LEDS);
-	if (validRunTime()) {
-		bday.startup();
-    
-		while (validRunTime()) {
-			bday.action();
-			delay(500);
-		}
+	if (validRunTime() && !running) {
+		running = true;
+		nbday.startup();
+	}
+	if (validRunTime() && running) {
+		nbday.action();
+		delay(1000);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runMaddie()
 {
-	Maddie bday(NUM_LEDS);
-	if (validRunTime()) {
-		bday.startup();
-
-		while (validRunTime()) {
-			bday.action();
-			delay(500);
-		}
+	if (validRunTime() && !running) {
+		running = true;
+		mbday.startup();
+	}
+	if (validRunTime() && running) {
+		mbday.action();
+		delay(1000);
+	}
+	if (!validRunTime() && running) {
 		pixelShutdown();
+		running = false;
 	}
 }
 
 void runMeteorShower()
 {
-	MeteorShower meteorStrip1;
-	MeteorShower meteorStrip2;
-	MeteorShower meteorStrip3;
-	MeteorShower meteorStrip4;
-
-	while (validRunTime()) {
+	if (validRunTime() && !running) {
+		running = true;
+		mbday.startup();
+	}
+	if (validRunTime() && running) {
 		meteorStrip1.action();
 		meteorStrip2.action();
 		meteorStrip3.action();
 		meteorStrip4.action();
-
-		meteorStrip1.seeTheRainbow();
-		meteorStrip2.seeTheRainbow();
-		meteorStrip3.seeTheRainbow();
-		meteorStrip4.seeTheRainbow();
+		FastLED.show();
 	}
-	activeProgram = NO_PROGRAM;
-	pixelShutdown();
+	if (!validRunTime() && running) {
+		pixelShutdown();
+		running = false;
+	}
 }
 
 void runDefault()
 {
-	Independence iday(NUM_LEDS);
-	if (validRunTime()) {
-		iday.startup();
-    
-		while (Time.hour() != 0) {
-			iday.action();
-			delay(500);
-		}
-		defaultProg = false;
-		pixelShutdown();
-	}
+	runIndependence();
 }
 
 void programOnDeck()
