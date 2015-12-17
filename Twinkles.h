@@ -17,6 +17,7 @@ public:
 
 	void startup();
 	void action();
+	void setBackgroundColor(CRGB);
 	void seeTheRainbow();
 
 private:

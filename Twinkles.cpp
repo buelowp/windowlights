@@ -21,6 +21,11 @@ void Twinkles::startup()
 {
 }
 
+void Twinkles::setBackgroundColor(CRGB c)
+{
+	gBackgroundColor = c;
+}
+
 //  This function loops over each pixel, calculates the
 //  adjusted 'clock' that this pixel should use, and calls
 //  "CalculateOneTwinkle" on each pixel.  It then displays

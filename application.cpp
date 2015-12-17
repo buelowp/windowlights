@@ -43,17 +43,18 @@ using namespace NSFastLED;
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
-int bounce;
 bool defaultProg;
 bool runAnyway;
 int lastMinute;
 int activeProgram;
 bool running;
-bool firstrun;
 
 const TProgmemRGBPalette16 Christmas_p =
-{  CRGB::Red, CRGB::Blue, CRGB::Green, CRGB::Orange,
-   CRGB::Pink, CRGB::Yellow, CRGB::White,
+{
+		CRGB::Red, CRGB::Blue, CRGB::Green, CRGB::Orange,
+		CRGB::Pink, CRGB::Yellow, CRGB::White, CRGB::Blue,
+		CRGB::Pink, CRGB::Blue, CRGB::Green, CRGB::Orange,
+		CRGB::Yellow, CRGB::Red, CRGB::White, CRGB::Red
 };
 
 const TProgmemRGBPalette16 Snow_p =
@@ -145,19 +146,6 @@ bool validFullDayRunTime()
 	return false;
 }
 
-void isrService()
-{
-	__disable_irq();
-	if ((millis() - bounce) < 1000) {
-		defaultProg = true;
-		bounce = 0;
-	}
-	else {
-		bounce = millis();
-	}
-	__enable_irq();
-}
-
 void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
@@ -170,14 +158,7 @@ void pixelShutdown()
 
 void runSnow()
 {
-	if (!running) {
-		running = true;
-		snow.startup();
-		snow.seeTheRainbow();
-	}
-	if (running) {
-		snow.action();
-	}
+	snow.action();
 }
 
 void runChristmas()
@@ -344,7 +325,7 @@ void programOnDeck()
 	if (activeProgram != NO_PROGRAM)
 		return;
 
-	/* Christmas lights start on the 10th of december, and go through the end of the month */
+	/* Christmas lights start on the 1st of December, and go through the end of the month */
 	if (Time.month() == 12) {
 		activeProgram = CHRISTMAS;
 	}
@@ -443,21 +424,15 @@ int setProgram(String prog)
 		activeProgram = SNOW;
 		return activeProgram;
 	}
-	if (prog.equalsIgnoreCase("off")) {
-		activeProgram = NO_PROGRAM;
-		running = false;
-		pixelShutdown();
-		return activeProgram;
-	}
+	pixelShutdown();
 	runAnyway = false;
+	running = false;
 	activeProgram = NO_PROGRAM;
 	return NO_PROGRAM;
 }
 
 void setup()
 {
-	pinMode(SWITCH_PIN, INPUT);
-	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
 	Serial.begin(115200);
 	pinMode(D0, OUTPUT);
 	pinMode(D1, OUTPUT);
@@ -470,7 +445,6 @@ void setup()
 	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
-	bounce = 0;
 	defaultProg = false;
 
 	for (int i = 0; i < NUM_LEDS; i++) {
@@ -485,9 +459,7 @@ void setup()
     activeProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
-    firstrun = false;
     Serial.begin(115200);
-    Serial.println("Startup finished");
 }
 
 void loop()
