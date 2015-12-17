@@ -35,6 +35,7 @@
 #include "Norah.h"
 #include "Maddie.h"
 #include "MeteorShower.h"
+#include "Twinkles.h"
 
 SYSTEM_MODE(AUTOMATIC);
 
@@ -42,15 +43,40 @@ using namespace NSFastLED;
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
-int bounce;
 bool defaultProg;
 bool runAnyway;
 int lastMinute;
 int activeProgram;
 bool running;
-bool firstrun;
+
+const TProgmemRGBPalette16 Christmas_p =
+{
+		CRGB::Red, CRGB::Blue, CRGB::Green, CRGB::Orange,
+		CRGB::Pink, CRGB::Yellow, CRGB::White, CRGB::Blue,
+		CRGB::Pink, CRGB::Blue, CRGB::Green, CRGB::Orange,
+		CRGB::Yellow, CRGB::Red, CRGB::White, CRGB::Red
+};
+
+const TProgmemRGBPalette16 Snow_p =
+{  0x404040, 0x404040, 0x404040, 0x404040,
+   0x404040, 0x404040, 0x404040, 0x404040,
+   0x404040, 0x404040, 0x404040, 0x404040,
+   0x404040, 0x404040, 0x404040, 0xFFFFFF
+};
+
+// A pure "fairy light" palette with some brightness variations
+#define HALFFAIRY ((CRGB::FairyLight & 0xFEFEFE) / 2)
+#define QUARTERFAIRY ((CRGB::FairyLight & 0xFCFCFC) / 4)
+const TProgmemRGBPalette16 FairyLight_p =
+{  CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight,
+   HALFFAIRY,        HALFFAIRY,        CRGB::FairyLight, CRGB::FairyLight,
+   QUARTERFAIRY,     QUARTERFAIRY,     CRGB::FairyLight, CRGB::FairyLight,
+   CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight
+};
 
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
+Twinkles twink(Christmas_p);
+Twinkles snow(Snow_p);
 Valentines vday(NUM_LEDS);
 Independence iday(NUM_LEDS);
 Halloween hday(NUM_LEDS);
@@ -86,7 +112,22 @@ int currentTimeZone()
     return CST_OFFSET;
 }
 
-bool validRunTime()
+bool validNightRunTime()
+{
+	double sunset = sun.calcSunset();
+	double minsPastMidnight = Time.hour() * 60 + Time.minute();
+
+	if (runAnyway)
+		return true;
+
+	if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1380)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool validFullDayRunTime()
 {
 	double sunrise = sun.calcSunrise();
 	double sunset = sun.calcSunset();
@@ -105,19 +146,6 @@ bool validRunTime()
 	return false;
 }
 
-void isrService()
-{
-	__disable_irq();
-	if ((millis() - bounce) < 1000) {
-		defaultProg = true;
-		bounce = 0;
-	}
-	else {
-		bounce = millis();
-	}
-	__enable_irq();
-}
-
 void pixelShutdown()
 {
 	for (int i = 0; i < NUM_STRIPS; i++) {
@@ -128,37 +156,58 @@ void pixelShutdown()
 	FastLED.show();
 }
 
+void runSnow()
+{
+	snow.action();
+}
+
 void runChristmas()
 {
-	if (validRunTime() && !running) {
-		running = true;
-		wink.startup();
-		wink.setFirstActive(20);
-		wink.seeTheRainbow();
+	if (!Time.day() % 2) {
+		if (validFullDayRunTime() && !running) {
+			running = true;
+			wink.startup();
+			wink.setFirstActive(20);
+			wink.seeTheRainbow();
+		}
+		if (validFullDayRunTime() && running) {
+			wink.action();
+			if (random(0, 3) == 2)
+				wink.addOne();
+			delay(25);
+		}
+		if (!validFullDayRunTime() && running) {
+			pixelShutdown();
+			running = false;
+		}
 	}
-	if (validRunTime() && running) {
-		wink.action();
-		if (random(0, 3) == 2)
-			wink.addOne();
-		delay(25);
-	}
-	if (!validRunTime() && running) {
-		pixelShutdown();
-		running = false;
+	else {
+		if (validFullDayRunTime() && !running) {
+			running = true;
+			twink.startup();
+			twink.seeTheRainbow();
+		}
+		if (validFullDayRunTime() && running) {
+			twink.action();
+		}
+		if (!validFullDayRunTime() && running) {
+			pixelShutdown();
+			running = false;
+		}
 	}
 }
 
 void runValentines()
 {
-	if (validRunTime() && !running) {
+	if (validFullDayRunTime() && !running) {
 		running = true;
 		vday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validFullDayRunTime() && running) {
 		vday.action();
 		delay(500);
 	}
-	if (!validRunTime() && running) {
+	if (!validFullDayRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -166,15 +215,15 @@ void runValentines()
 
 void runIndependence()
 {
-	if (validRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
 		iday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validNightRunTime() && running) {
 		iday.action();
 		delay(500);
 	}
-	if (!validRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -182,18 +231,18 @@ void runIndependence()
 
 void runHalloween()
 {
-	if (validRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
 		hday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validNightRunTime() && running) {
 		hday.action();
 		if (random(0, 50) == 23) {
 			hday.lightning(random(0, NUM_STRIPS));
 		}
 		delay(1000);
 	}
-	if (!validRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -201,15 +250,15 @@ void runHalloween()
 
 void runThanksgiving()
 {
-	if (validRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
 		tday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validNightRunTime() && running) {
 		tday.action();
 		delay(1000);
 	}
-	if (!validRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -217,15 +266,15 @@ void runThanksgiving()
 
 void runNorah()
 {
-	if (validRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
 		nbday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validNightRunTime() && running) {
 		nbday.action();
 		delay(1000);
 	}
-	if (!validRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -233,15 +282,15 @@ void runNorah()
 
 void runMaddie()
 {
-	if (validRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
 		mbday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validNightRunTime() && running) {
 		mbday.action();
 		delay(1000);
 	}
-	if (!validRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -249,18 +298,18 @@ void runMaddie()
 
 void runMeteorShower()
 {
-	if (validRunTime() && !running) {
+	if (validFullDayRunTime() && !running) {
 		running = true;
 		mbday.startup();
 	}
-	if (validRunTime() && running) {
+	if (validFullDayRunTime() && running) {
 		meteorStrip1.action();
 		meteorStrip2.action();
 		meteorStrip3.action();
 		meteorStrip4.action();
 		FastLED.show();
 	}
-	if (!validRunTime() && running) {
+	if (!validFullDayRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -276,7 +325,7 @@ void programOnDeck()
 	if (activeProgram != NO_PROGRAM)
 		return;
 
-	/* Christmas lights start on the 10th of december, and go through the end of the month */
+	/* Christmas lights start on the 1st of December, and go through the end of the month */
 	if (Time.month() == 12) {
 		activeProgram = CHRISTMAS;
 	}
@@ -371,14 +420,19 @@ int setProgram(String prog)
 		activeProgram = VALENTINES;
 		return activeProgram;
 	}
+	if (prog.equalsIgnoreCase("snow")) {
+		activeProgram = SNOW;
+		return activeProgram;
+	}
+	pixelShutdown();
 	runAnyway = false;
+	running = false;
+	activeProgram = NO_PROGRAM;
 	return NO_PROGRAM;
 }
 
 void setup()
 {
-	pinMode(SWITCH_PIN, INPUT);
-	attachInterrupt(SWITCH_PIN, isrService, CHANGE);
 	Serial.begin(115200);
 	pinMode(D0, OUTPUT);
 	pinMode(D1, OUTPUT);
@@ -391,7 +445,6 @@ void setup()
 	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
-	bounce = 0;
 	defaultProg = false;
 
 	for (int i = 0; i < NUM_LEDS; i++) {
@@ -406,9 +459,7 @@ void setup()
     activeProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
-    firstrun = false;
     Serial.begin(115200);
-    Serial.println("Startup finished");
 }
 
 void loop()
@@ -443,6 +494,9 @@ void loop()
 		break;
 	case MADDIE_BDAY:
 		runMaddie();
+		break;
+	case SNOW:
+		runSnow();
 		break;
 	}
     printHeartbeat();
