@@ -71,10 +71,22 @@ void Twinkles::action()
 			// on the "brightness = f( time )" idea.
 			CRGB c = computeOneTwinkle( myclock30, myunique8);
 
-			// If the new pixel is brighter than the background color, use it.
-			if( c.getAverageLight() > backgroundBrightness) {
+			uint8_t cbright = c.getAverageLight();
+			int16_t deltabright = cbright - backgroundBrightness;
+
+			if (deltabright >= 32 || (!gBackgroundColor)) {
+			      // If the new pixel is significantly brighter than the background color,
+			      // use the new color.
 				strip[j][i] = c;
-			} else {
+			}
+			else if ( deltabright > 0 ) {
+			      // If the new pixel is just slightly brighter than the background color,
+			      // mix a blend of the new color and the background color
+				strip[j][i] = blend( gBackgroundColor, c, deltabright * 8);
+			}
+			else {
+			      // if the new pixel is not at all brighter than the background color,
+			      // just use the background color.
 				strip[j][i] = gBackgroundColor;
 			}
 		}
