@@ -4,3 +4,6 @@
 [submodule "FastLED-Sparkcore"]
 	path = FastLED-Sparkcore
 	url = https://github.com/focalintent/FastLED-Sparkcore
+[submodule "FastLED-photon"]
+	path = FastLED-photon
+	url = git@github.com:buelowp/FastLED-photon.git
