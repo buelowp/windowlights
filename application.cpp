@@ -183,7 +183,7 @@ void runSnow()
 
 void runChristmas()
 {
-	if (Time.day()) {
+	if (!Time.day()) {
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			wink.startup();
