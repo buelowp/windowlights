@@ -34,7 +34,6 @@ static HSVHue ChristmasColorWheel[] = {
 		HUE_GREEN,
 		HUE_PURPLE,
 		HUE_ORANGE,
-		HUE_PINK,
 };
 
 Christmas::Christmas(int p, int a)

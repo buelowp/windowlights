@@ -52,9 +52,9 @@ bool running;
 const TProgmemRGBPalette16 Christmas_p =
 {
 		CRGB::Red, CRGB::Blue, CRGB::Green, CRGB::Orange,
-		CRGB::Pink, CRGB::Yellow, CRGB::White, CRGB::Blue,
-		CRGB::Pink, CRGB::Blue, CRGB::Green, CRGB::Orange,
-		CRGB::Yellow, CRGB::Red, CRGB::White, CRGB::Red
+		CRGB::Purple, CRGB::Yellow, CRGB::White, CRGB::Blue,
+		CRGB::Blue, CRGB::Blue, CRGB::Green, CRGB::Orange,
+		CRGB::Yellow, CRGB::Red, CRGB::Purple, CRGB::Red
 };
 
 const TProgmemRGBPalette16 Snow_p =
@@ -85,7 +85,7 @@ const TProgmemRGBPalette16 ClassicC9_p =
 		C9_Orange, C9_Orange, C9_Orange,
 		C9_Green, C9_Green, C9_Green, C9_Green,
 		C9_Blue, C9_Blue, C9_Blue,
-		C9_White, C9_White, C9_White
+		C9_Red, C9_Blue, C9_White
 };
 
 
@@ -151,6 +151,10 @@ bool validFullDayRunTime()
 	if (runAnyway)
 		return true;
 
+	// It's Christmas, just run them all day
+	if (Time.month() == 12 && Time.day() == 25)
+		return true;
+
 	if ((minsPastMidnight >= 240) && (minsPastMidnight < (sunrise + 15))) {
 		return true;
 	}
@@ -179,7 +183,7 @@ void runSnow()
 
 void runChristmas()
 {
-	if (!Time.day()) {
+	if (Time.day()) {
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			wink.startup();
@@ -338,9 +342,6 @@ void runDefault()
 
 void programOnDeck()
 {
-	activeProgram = SNOW;
-	return;
-
 	if (activeProgram != NO_PROGRAM)
 		return;
 
