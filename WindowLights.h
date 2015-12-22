@@ -11,7 +11,7 @@
 #define LED_STRIP_3    D2
 #define LED_STRIP_4    D3
 
-#define LEDS_PER_STRIP  114
+#define LEDS_PER_STRIP  110
 #define NUM_STRIPS      4
 #define NUM_LEDS        (LEDS_PER_STRIP * NUM_STRIPS)
 #define NUM_ACTIVE      20
@@ -31,18 +31,9 @@
 #define SNOW				110
 #define NO_PROGRAM      	999
 
-#define TWINKLE_SPEED 		5
-
-// Overall twinkle density.
-// 0 (NONE lit) to 8 (ALL lit at once).
-// Default is 5.
-#define TWINKLE_DENSITY 	5
 
 // Background color for 'unlit' pixels
 // Can be set to CRGB::Black if desired.
-
-// How often to change color palettes.
-#define SECONDS_PER_PALETTE  20
 
 #define CST_OFFSET      	-6
 #define DST_OFFSET      	(CST_OFFSET + 1)

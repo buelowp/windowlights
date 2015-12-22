@@ -74,8 +74,23 @@ const TProgmemRGBPalette16 FairyLight_p =
    CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight
 };
 
+#define C9_Red 0xB80400
+#define C9_Orange 0x902C02
+#define C9_Green 0x046002
+#define C9_Blue 0x070758
+#define C9_White 0x606830
+const TProgmemRGBPalette16 ClassicC9_p =
+{
+		C9_Red, C9_Red, C9_Red,
+		C9_Orange, C9_Orange, C9_Orange,
+		C9_Green, C9_Green, C9_Green, C9_Green,
+		C9_Blue, C9_Blue, C9_Blue,
+		C9_White, C9_White, C9_White
+};
+
+
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
-Twinkles twink(Christmas_p);
+Twinkles twink(ClassicC9_p);
 Twinkles snow(Snow_p);
 Valentines vday(NUM_LEDS);
 Independence iday(NUM_LEDS);
@@ -159,11 +174,12 @@ void pixelShutdown()
 void runSnow()
 {
 	snow.action();
+	twink.seeTheRainbow();
 }
 
 void runChristmas()
 {
-	if (!Time.day() % 2) {
+	if (!Time.day()) {
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			wink.startup();
@@ -184,11 +200,12 @@ void runChristmas()
 	else {
 		if (validFullDayRunTime() && !running) {
 			running = true;
-			twink.startup();
-			twink.seeTheRainbow();
+			twink.setDensity(8);
+			twink.setSpeed(5);
 		}
 		if (validFullDayRunTime() && running) {
 			twink.action();
+			twink.seeTheRainbow();
 		}
 		if (!validFullDayRunTime() && running) {
 			pixelShutdown();
@@ -300,7 +317,6 @@ void runMeteorShower()
 {
 	if (validFullDayRunTime() && !running) {
 		running = true;
-		mbday.startup();
 	}
 	if (validFullDayRunTime() && running) {
 		meteorStrip1.action();
@@ -322,6 +338,9 @@ void runDefault()
 
 void programOnDeck()
 {
+	activeProgram = SNOW;
+	return;
+
 	if (activeProgram != NO_PROGRAM)
 		return;
 
@@ -370,13 +389,12 @@ void programOnDeck()
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
-        Particle.publish("Active Program", String("Active Program: " + activeProgram));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Current Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Current Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 }
@@ -443,7 +461,7 @@ void setup()
 	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D0>(strip[0], NUM_LEDS);
 	randomSeed(analogRead(A0));
 	defaultProg = false;
 
@@ -455,6 +473,9 @@ void setup()
     lastMinute = Time.minute();
     Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
+
+	snow.setDensity(8);
+	snow.setSpeed(6);
 
     activeProgram = NO_PROGRAM;
     runAnyway = false;

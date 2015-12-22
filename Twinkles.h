@@ -10,6 +10,13 @@
 
 #include "WindowLights.h"
 
+#define TWINKLE_SPEED 		6
+
+// Overall twinkle density.
+// 0 (NONE lit) to 8 (ALL lit at once).
+// Default is 5.
+#define TWINKLE_DENSITY 	8
+
 class Twinkles {
 public:
 	Twinkles(CRGBPalette16);
@@ -19,6 +26,8 @@ public:
 	void action();
 	void setBackgroundColor(CRGB);
 	void seeTheRainbow();
+	void setDensity(int);
+	void setSpeed(int);
 
 private:
 	uint8_t attackDecayWave8(uint8_t);
@@ -26,6 +35,8 @@ private:
 
 	CRGBPalette16 gCurrentPalette;
 	CRGB gBackgroundColor;
+	int density;
+	int speed;
 };
 
 #endif /* USER_APPLICATIONS_WINDOWLIGHTS_TWINKLES_H_ */

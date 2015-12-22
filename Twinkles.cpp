@@ -10,7 +10,9 @@
 Twinkles::Twinkles(CRGBPalette16 pal)
 {
 	gCurrentPalette = pal;
-	gBackgroundColor = CRGB(3,0,6);
+	gBackgroundColor = CRGB(16,14,4);
+	density = 8;
+	speed = 5;
 }
 
 Twinkles::~Twinkles()
@@ -24,6 +26,18 @@ void Twinkles::startup()
 void Twinkles::setBackgroundColor(CRGB c)
 {
 	gBackgroundColor = c;
+}
+
+void Twinkles::setDensity(int d)
+{
+	if (d <= 8)
+		density = d;
+}
+
+void Twinkles::setSpeed(int s)
+{
+	if (s <= 8)
+		speed = s;
 }
 
 //  This function loops over each pixel, calculates the
@@ -95,12 +109,12 @@ uint8_t Twinkles::attackDecayWave8( uint8_t i)
 //  should light at all during this cycle, based on the TWINKLE_DENSITY.
 CRGB Twinkles::computeOneTwinkle( uint32_t ms, uint8_t salt)
 {
-	uint16_t ticks = ms >> (8-TWINKLE_SPEED);
+	uint16_t ticks = ms >> (8-speed);
 	uint8_t fastcycle8 = ticks;
 	uint8_t slowcycle8 = (ticks >> 8) ^ salt;
 
 	uint8_t bright = 0;
-	if( (slowcycle8 & 0x0E) < TWINKLE_DENSITY) {
+	if( (slowcycle8 & 0x0E) < density) {
 		bright = attackDecayWave8( fastcycle8);
 	}
 
