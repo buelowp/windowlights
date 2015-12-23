@@ -29,6 +29,7 @@
 #define METEOR_SHOWER		108
 #define NEWYEARS			109
 #define SNOW				110
+#define NEW_YEARS			111
 #define NO_PROGRAM      	999
 
 
@@ -42,7 +43,7 @@
 #define LATITUDE        	42.058102
 #define LONGITUDE       	87.984189
 
-#define APP_VERSION			"2.1"
+#define APP_VERSION			"2.2"
 
 using namespace NSFastLED;
 

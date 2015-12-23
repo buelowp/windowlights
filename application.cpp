@@ -88,10 +88,18 @@ const TProgmemRGBPalette16 ClassicC9_p =
 		C9_Red, C9_Blue, C9_White
 };
 
+const TProgmemRGBPalette16 NYE_p =
+{
+		CRGB::Gold, CRGB::Gold, CRGB::Gold, CRGB::Gold,
+		CRGB::Silver, CRGB::Silver, CRGB::Silver, CRGB::Silver,
+		CRGB::Gold, CRGB::Gold, CRGB::Gold, CRGB::Gold,
+		CRGB::Silver, CRGB::Silver, CRGB::Silver, CRGB::Silver
+};
 
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
 Twinkles twink(ClassicC9_p);
 Twinkles snow(Snow_p);
+Twinkles nye(NYE_p);
 Valentines vday(NUM_LEDS);
 Independence iday(NUM_LEDS);
 Halloween hday(NUM_LEDS);
@@ -183,7 +191,7 @@ void runSnow()
 
 void runChristmas()
 {
-	if (!Time.day()) {
+	if (!(Time.day() % 2)) {
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			wink.startup();
@@ -205,7 +213,7 @@ void runChristmas()
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			twink.setDensity(8);
-			twink.setSpeed(5);
+			twink.setSpeed(4);
 		}
 		if (validFullDayRunTime() && running) {
 			twink.action();
@@ -335,6 +343,12 @@ void runMeteorShower()
 	}
 }
 
+void runNYE()
+{
+	nye.action();
+	nye.seeTheRainbow();
+}
+
 void runDefault()
 {
 	runIndependence();
@@ -346,7 +360,7 @@ void programOnDeck()
 		return;
 
 	/* Christmas lights start on the 1st of December, and go through the end of the month */
-	if (Time.month() == 12) {
+	if (Time.month() == 12 && Time.day() < 31) {
 		activeProgram = CHRISTMAS;
 	}
 	/* Valentines day lights only on the 14th */
@@ -382,6 +396,12 @@ void programOnDeck()
 	}
 	else if (Time.month() == 9 && Time.day() == 17) {
 		activeProgram = MADDIE_BDAY;
+	}
+	else if (Time.month() == 12 && Time.day() == 31) {
+		activeProgram = NEW_YEARS;
+	}
+	else if (Time.month() == 1 && Time.day() == 1) {
+		activeProgram = NEW_YEARS;
 	}
 	else
 		activeProgram = NO_PROGRAM;
@@ -441,6 +461,10 @@ int setProgram(String prog)
 	}
 	if (prog.equalsIgnoreCase("snow")) {
 		activeProgram = SNOW;
+		return activeProgram;
+	}
+	if (prog.equalsIgnoreCase("nye")) {
+		activeProgram = NEW_YEARS;
 		return activeProgram;
 	}
 	pixelShutdown();
@@ -519,6 +543,9 @@ void loop()
 		break;
 	case SNOW:
 		runSnow();
+		break;
+	case NEW_YEARS:
+		runNYE();
 		break;
 	}
     printHeartbeat();
