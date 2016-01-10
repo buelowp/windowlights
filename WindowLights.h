@@ -43,7 +43,7 @@
 #define LATITUDE        	42.058102
 #define LONGITUDE       	87.984189
 
-#define APP_VERSION			"2.2"
+#define APP_VERSION			"2.3"
 
 using namespace NSFastLED;
 

@@ -96,15 +96,31 @@ const TProgmemRGBPalette16 NYE_p =
 		CRGB::Silver, CRGB::Silver, CRGB::Silver, CRGB::Silver
 };
 
+const TProgmemRGBPalette16 Valentines_p =
+{
+		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
+		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
+		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
+		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
+};
+
+const TProgmemRGBPalette16 Norah_p =
+{
+		CRGB::DeepPink, CRGB::Gold, CRGB::DeepPink, CRGB::Gold,
+		CRGB::DeepPink, CRGB::Gold, CRGB::DeepPink, CRGB::Gold,
+		CRGB::DeepPink, CRGB::Gold, CRGB::DeepPink, CRGB::Gold,
+		CRGB::DeepPink, CRGB::Gold, CRGB::DeepPink, CRGB::Gold,
+};
+
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
 Twinkles twink(ClassicC9_p);
 Twinkles snow(Snow_p);
 Twinkles nye(NYE_p);
-Valentines vday(NUM_LEDS);
+Twinkles vday(Valentines_p);
 Independence iday(NUM_LEDS);
 Halloween hday(NUM_LEDS);
 Thanksgiving tday(NUM_LEDS);
-Norah nbday(NUM_LEDS);
+Twinkles nbday(Norah_p);
 Maddie mbday(NUM_LEDS);
 MeteorShower meteorStrip1;
 MeteorShower meteorStrip2;
@@ -186,12 +202,12 @@ void pixelShutdown()
 void runSnow()
 {
 	snow.action();
-	twink.seeTheRainbow();
+	snow.seeTheRainbow();
 }
 
 void runChristmas()
 {
-	if (!(Time.day() % 2)) {
+	if ((Time.day() % 2)) {
 		if (validFullDayRunTime() && !running) {
 			running = true;
 			wink.startup();
@@ -228,15 +244,16 @@ void runChristmas()
 
 void runValentines()
 {
-	if (validFullDayRunTime() && !running) {
+	if (validNightRunTime() && !running) {
 		running = true;
-		vday.startup();
+		vday.setDensity(8);
+		vday.setSpeed(7);
 	}
-	if (validFullDayRunTime() && running) {
+	if (validNightRunTime() && running) {
 		vday.action();
-		delay(500);
+		vday.seeTheRainbow();
 	}
-	if (!validFullDayRunTime() && running) {
+	if (!validNightRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -295,15 +312,16 @@ void runThanksgiving()
 
 void runNorah()
 {
-	if (validNightRunTime() && !running) {
+	if (validFullDayRunTime() && !running) {
 		running = true;
-		nbday.startup();
+		nbday.setDensity(8);
+		nbday.setSpeed(7);
 	}
 	if (validNightRunTime() && running) {
 		nbday.action();
-		delay(1000);
+		nbday.seeTheRainbow();
 	}
-	if (!validNightRunTime() && running) {
+	if (!validFullDayRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
