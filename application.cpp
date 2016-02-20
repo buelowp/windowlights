@@ -98,10 +98,10 @@ const TProgmemRGBPalette16 NYE_p =
 
 const TProgmemRGBPalette16 Valentines_p =
 {
-		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
-		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
-		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
-		CRGB::Pink, CRGB::Gold, CRGB::White, CRGB::Silver,
+		CRGB::Red, CRGB::DeepPink, CRGB::White, CRGB::Silver,
+		CRGB::Red, CRGB::DeepPink, CRGB::White, CRGB::DeepPink,
+		CRGB::Red, CRGB::DeepPink, CRGB::White, CRGB::Silver,
+		CRGB::Red, CRGB::Gold, CRGB::White, CRGB::DeepPink,
 };
 
 const TProgmemRGBPalette16 Norah_p =
@@ -247,7 +247,7 @@ void runValentines()
 	if (validNightRunTime() && !running) {
 		running = true;
 		vday.setDensity(8);
-		vday.setSpeed(7);
+		vday.setSpeed(6);
 	}
 	if (validNightRunTime() && running) {
 		vday.action();
@@ -428,12 +428,12 @@ void programOnDeck()
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Current Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System: " + System.version() + ", Program: " + APP_VERSION + ", Running Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Current Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System: " + System.version() + ", Program: " + APP_VERSION + ", Running Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 }
@@ -514,7 +514,7 @@ void setup()
 	FastLED.show();
 
     lastMinute = Time.minute();
-    Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
+    Particle.publish("Startup", String("System: " + System.version() + ", Program: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
 	snow.setDensity(8);

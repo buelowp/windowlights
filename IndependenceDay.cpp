@@ -39,16 +39,16 @@ void Independence::startup()
   for (int i = 0; i < NUM_STRIPS; i++) {
     for (int j = 0; j < LEDS_PER_STRIP; j++) {
       switch (i) {
-        case 3:
+        case 0:
           strip[i][j] = CRGB::Red;
           break;
-        case 2:
+        case 1:
           strip[i][j] = CRGB::White;
           break;
-        case 1:
+        case 2:
           strip[i][j] = CRGB::Blue;
           break;
-        case 0:
+        case 3:
           switch (which) {
             case 0:
               strip[i][j] = CRGB::Red;
@@ -126,5 +126,3 @@ void Independence::seeTheRainbow()
 	FastLED.setBrightness(100);
 	FastLED.show();
 }
-
-
