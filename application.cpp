@@ -130,6 +130,8 @@ MeteorShower meteorStrip4;
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
 
+STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
+
 int currentTimeZone()
 {
     if (Time.month() > 3 && Time.month() < 11) {
@@ -508,6 +510,8 @@ void setup()
 	randomSeed(analogRead(A0));
 	defaultProg = false;
 
+	WiFi.setCredentials("Office", "", WPA2);
+
 	for (int i = 0; i < NUM_LEDS; i++) {
 		strip[0][i] = CRGB::Black;
 	}
@@ -523,11 +527,12 @@ void setup()
     activeProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
-    Serial.begin(115200);
+	waitUntil(WiFi.ready);
 }
 
 void loop()
 {
+
     Time.zone(currentTimeZone());
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
     sun.setCurrentDate(Time.year(), Time.month(), Time.day());
