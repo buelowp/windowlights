@@ -506,15 +506,14 @@ void setup()
 	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D0>(strip[0], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
 	defaultProg = false;
 
 	WiFi.setCredentials("Office", "", WPA2);
+	waitUntil(WiFi.ready);
 
-	for (int i = 0; i < NUM_LEDS; i++) {
-		strip[0][i] = CRGB::Black;
-	}
+	FastLED.clear();
 	FastLED.show();
 
     lastMinute = Time.minute();
@@ -527,7 +526,6 @@ void setup()
     activeProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
-	waitUntil(WiFi.ready);
 }
 
 void loop()
