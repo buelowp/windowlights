@@ -498,14 +498,14 @@ void setup()
 {
 	Serial.begin(115200);
 	pinMode(D0, OUTPUT);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D3, OUTPUT);
+	pinMode(1, OUTPUT);
+	pinMode(2, OUTPUT);
+	pinMode(3, OUTPUT);
 
 	delay(3000);
-	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, 3>(strip[0], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, 2>(strip[1], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, 1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
 	defaultProg = false;
