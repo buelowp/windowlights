@@ -184,7 +184,7 @@ bool validFullDayRunTime()
 	if ((minsPastMidnight >= 240) && (minsPastMidnight < (sunrise + 15))) {
 		return true;
 	}
-	if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1380)) {
+	if (minsPastMidnight >= (sunset - 45) && (minsPastMidnight < 1380)) {
 		return true;
 	}
 
@@ -319,7 +319,7 @@ void runNorah()
 		nbday.setDensity(8);
 		nbday.setSpeed(7);
 	}
-	if (validNightRunTime() && running) {
+	if (validFullDayRunTime() && running) {
 		nbday.action();
 		nbday.seeTheRainbow();
 	}
@@ -331,15 +331,15 @@ void runNorah()
 
 void runMaddie()
 {
-	if (validNightRunTime() && !running) {
+	if (validFullDayRunTime() && !running) {
 		running = true;
 		mbday.startup();
 	}
-	if (validNightRunTime() && running) {
+	if (validFullDayRunTime() && running) {
 		mbday.action();
 		delay(1000);
 	}
-	if (!validNightRunTime() && running) {
+	if (!validFullDayRunTime() && running) {
 		pixelShutdown();
 		running = false;
 	}
@@ -430,12 +430,12 @@ void programOnDeck()
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("System: " + System.version() + ", Program: " + APP_VERSION + ", Running Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("System: " + System.version() + ", Program: " + APP_VERSION + ", Running Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(activeProgram)));
         lastMinute = Time.minute();
     }
 }
@@ -496,11 +496,12 @@ int setProgram(String prog)
 
 void setup()
 {
-	Serial.begin(115200);
 	pinMode(D0, OUTPUT);
 	pinMode(1, OUTPUT);
 	pinMode(2, OUTPUT);
 	pinMode(3, OUTPUT);
+
+	waitUntil(WiFi.ready);
 
 	delay(3000);
 	FastLED.addLeds<NEOPIXEL, 3>(strip[0], NUM_LEDS);
@@ -510,14 +511,11 @@ void setup()
 	randomSeed(analogRead(A0));
 	defaultProg = false;
 
-	WiFi.setCredentials("Office", "", WPA2);
-	waitUntil(WiFi.ready);
-
 	FastLED.clear();
 	FastLED.show();
 
     lastMinute = Time.minute();
-    Particle.publish("Startup", String("System: " + System.version() + ", Program: " + APP_VERSION));
+    Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
 	snow.setDensity(8);
@@ -526,11 +524,12 @@ void setup()
     activeProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
+    FastLED.clear();
+    FastLED.show();
 }
 
 void loop()
 {
-
     Time.zone(currentTimeZone());
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
     sun.setCurrentDate(Time.year(), Time.month(), Time.day());
