@@ -39,7 +39,7 @@
 
 SYSTEM_MODE(AUTOMATIC);
 
-using namespace NSFastLED;
+#define APP_VERSION			"2.6"
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
@@ -112,6 +112,14 @@ const TProgmemRGBPalette16 Norah_p =
 		CRGB::DeepPink, CRGB::Gold, CRGB::DeepPink, CRGB::Gold,
 };
 
+const TProgmemRGBPalette16 Maddie_p =
+{
+		CRGB::Aqua, CRGB::Lavender, CRGB::Aqua, CRGB::Lavender,
+		CRGB::Aqua, CRGB::Lavender, CRGB::Aqua, CRGB::Lavender,
+		CRGB::Aqua, CRGB::Lavender, CRGB::Aqua, CRGB::Lavender,
+		CRGB::Aqua, CRGB::Lavender, CRGB::Aqua, CRGB::Lavender,
+};
+
 Christmas wink(NUM_LEDS, NUM_ACTIVE);
 Twinkles twink(ClassicC9_p);
 Twinkles snow(Snow_p);
@@ -121,7 +129,7 @@ Independence iday(NUM_LEDS);
 Halloween hday(NUM_LEDS);
 Thanksgiving tday(NUM_LEDS);
 Twinkles nbday(Norah_p);
-Maddie mbday(NUM_LEDS);
+Twinkles mbday(Maddie_p);
 MeteorShower meteorStrip1;
 MeteorShower meteorStrip2;
 MeteorShower meteorStrip3;
@@ -193,11 +201,7 @@ bool validFullDayRunTime()
 
 void pixelShutdown()
 {
-	for (int i = 0; i < NUM_STRIPS; i++) {
-		for (int j = 0; j < LEDS_PER_STRIP; j++) {
-			strip[i][j] = CRGB::Black;
-		}
-	}
+	FastLED.clear();
 	FastLED.show();
 }
 
@@ -333,11 +337,12 @@ void runMaddie()
 {
 	if (validFullDayRunTime() && !running) {
 		running = true;
-		mbday.startup();
+		mbday.setDensity(8);
+		mbday.setSpeed(7);
 	}
 	if (validFullDayRunTime() && running) {
 		mbday.action();
-		delay(1000);
+		mbday.seeTheRainbow();
 	}
 	if (!validFullDayRunTime() && running) {
 		pixelShutdown();
