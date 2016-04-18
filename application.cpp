@@ -39,14 +39,13 @@
 
 SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			"2.6"
+#define APP_VERSION			"2.7"
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
-bool defaultProg;
 bool runAnyway;
 int lastMinute;
-int activeProgram;
+int localActiveProgram;
 bool running;
 
 const TProgmemRGBPalette16 Christmas_p =
@@ -207,6 +206,9 @@ void pixelShutdown()
 
 void runSnow()
 {
+	snow.setDensity(8);
+	snow.setSpeed(6);
+
 	snow.action();
 	snow.seeTheRainbow();
 }
@@ -321,7 +323,7 @@ void runNorah()
 	if (validFullDayRunTime() && !running) {
 		running = true;
 		nbday.setDensity(8);
-		nbday.setSpeed(7);
+		nbday.setSpeed(4);
 	}
 	if (validFullDayRunTime() && running) {
 		nbday.action();
@@ -338,7 +340,7 @@ void runMaddie()
 	if (validFullDayRunTime() && !running) {
 		running = true;
 		mbday.setDensity(8);
-		mbday.setSpeed(7);
+		mbday.setSpeed(5);
 	}
 	if (validFullDayRunTime() && running) {
 		mbday.action();
@@ -379,68 +381,62 @@ void runDefault()
 	runIndependence();
 }
 
-void programOnDeck()
+int programOnDeck()
 {
-	if (activeProgram != NO_PROGRAM)
-		return;
-
-	/* Christmas lights start on the 1st of December, and go through the end of the month */
-	if (Time.month() == 12 && Time.day() < 31) {
-		activeProgram = CHRISTMAS;
-	}
-	/* Valentines day lights only on the 14th */
-	else if ((Time.month() == 2) && (Time.day() == 14)) {
-		activeProgram = VALENTINES;
-	}
-	/* Independence day lights on the 4th, but also on Labor and Memorial days */
-	else if ((Time.month() == 7) && (Time.day() == 4)) {
-		activeProgram = INDEPENDENCE;
-	}
-	else if (Time.month() == 5) {
-		if ((Time.day() > 24) && (Time.weekday() == 2)) {
-			activeProgram = INDEPENDENCE;
-		}
-	}
-	else if (Time.month() == 9) {
-		if ((Time.day() < 8) && (Time.weekday() == 2)) {
-			activeProgram = INDEPENDENCE;
-		}
-	}
-	/* Halloween starts on the 24th and runs through the end of the month */
-	else if ((Time.month() == 10) && (Time.day() > 24)) {
-		activeProgram = HALLOWEEN;
-	}
-	/* Start turkey day lights on the 20th and run through the end of the month */
-	else if (Time.month() == 11 && Time.day() > 20) {
-		activeProgram = THANKSGIVING;
-	}
-	/* Random other days to show a pattern */
-	else if (Time.month() == 4) {
+	switch (Time.month()) {
+	case 1:
+		if (Time.day() == 1)
+			localActiveProgram = NEW_YEARS;
+		break;
+	case 2:
 		if (Time.day() == 14)
-			activeProgram = NORAH_BDAY;
+			localActiveProgram = VALENTINES;
+		break;
+	case 4:
+		if (Time.day() == 14)
+			localActiveProgram = NORAH_BDAY;
+		break;
+	case 5:
+		if (Time.day() > 24 && Time.weekday() == 2)
+			localActiveProgram = INDEPENDENCE;
+		break;
+	case 7:
+		if (Time.day() == 4)
+			localActiveProgram = INDEPENDENCE;
+		break;
+	case 9:
+		if (Time.day() == 17)
+			localActiveProgram = MADDIE_BDAY;
+		if (Time.day() < 8 && Time.weekday() == 2)
+			localActiveProgram = INDEPENDENCE;
+		break;
+	case 10:
+		if (Time.day() > 24)
+			localActiveProgram = HALLOWEEN;
+		break;
+	case 11:
+		if (Time.day() > 20)
+			localActiveProgram = THANKSGIVING;
+		break;
+	case 12:
+		if (Time.day() < 31)
+			localActiveProgram = CHRISTMAS;
+		if (Time.day() == 31)
+			localActiveProgram = NEW_YEARS;
+		break;
 	}
-	else if (Time.month() == 9 && Time.day() == 17) {
-		activeProgram = MADDIE_BDAY;
-	}
-	else if (Time.month() == 12 && Time.day() == 31) {
-		activeProgram = NEW_YEARS;
-	}
-	else if (Time.month() == 1 && Time.day() == 1) {
-		activeProgram = NEW_YEARS;
-	}
-	else
-		activeProgram = NO_PROGRAM;
+	return localActiveProgram;
 }
 
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(localActiveProgram)));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(activeProgram)));
+        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(localActiveProgram)));
         lastMinute = Time.minute();
     }
 }
@@ -449,53 +445,53 @@ int setProgram(String prog)
 {
 	runAnyway = true;
 	if (prog.equalsIgnoreCase("christmas")) {
-		activeProgram = CHRISTMAS;
-		return activeProgram;
+		localActiveProgram = CHRISTMAS;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("newyears")) {
-		activeProgram = NEWYEARS;
-		return activeProgram;
+		localActiveProgram = NEWYEARS;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("halloween")) {
-		activeProgram = HALLOWEEN;
-		return activeProgram;
+		localActiveProgram = HALLOWEEN;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("thanksgiving")) {
-		activeProgram = THANKSGIVING;
-		return activeProgram;
+		localActiveProgram = THANKSGIVING;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("independence")) {
-		activeProgram = INDEPENDENCE;
-		return activeProgram;
+		localActiveProgram = INDEPENDENCE;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("maddie")) {
-		activeProgram = MADDIE_BDAY;
-		return activeProgram;
+		localActiveProgram = MADDIE_BDAY;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("norah")) {
-		activeProgram = NORAH_BDAY;
-		return activeProgram;
+		localActiveProgram = NORAH_BDAY;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("meteors")) {
-		activeProgram = METEOR_SHOWER;
-		return activeProgram;
+		localActiveProgram = METEOR_SHOWER;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("valentines")) {
-		activeProgram = VALENTINES;
-		return activeProgram;
+		localActiveProgram = VALENTINES;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("snow")) {
-		activeProgram = SNOW;
-		return activeProgram;
+		localActiveProgram = SNOW;
+		return localActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("nye")) {
-		activeProgram = NEW_YEARS;
-		return activeProgram;
+		localActiveProgram = NEW_YEARS;
+		return localActiveProgram;
 	}
 	pixelShutdown();
 	runAnyway = false;
 	running = false;
-	activeProgram = NO_PROGRAM;
+	localActiveProgram = NO_PROGRAM;
 	return NO_PROGRAM;
 }
 
@@ -514,19 +510,13 @@ void setup()
 	FastLED.addLeds<NEOPIXEL, 1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
-	defaultProg = false;
 
-	FastLED.clear();
-	FastLED.show();
-
+	Serial.begin(115200);
     lastMinute = Time.minute();
     Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
-	snow.setDensity(8);
-	snow.setSpeed(6);
-
-    activeProgram = NO_PROGRAM;
+    localActiveProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
     FastLED.clear();
@@ -539,9 +529,7 @@ void loop()
     sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
     sun.setCurrentDate(Time.year(), Time.month(), Time.day());
 
-    programOnDeck();
-
-	switch (activeProgram) {
+	switch (programOnDeck()) {
 	case CHRISTMAS:
 		runChristmas();
 		break;

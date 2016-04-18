@@ -25,17 +25,23 @@ void Twinkles::startup()
 
 void Twinkles::setBackgroundColor(CRGB c)
 {
+	Serial.print("Twinkle::setBackgroundColor: ");
+	Serial.println(c);
 	gBackgroundColor = c;
 }
 
 void Twinkles::setDensity(int d)
 {
+	Serial.print("Twinkle::setDensity: ");
+	Serial.println(d);
 	if (d <= 8)
 		density = d;
 }
 
 void Twinkles::setSpeed(int s)
 {
+	Serial.print("Twinkle::setSpeed: ");
+	Serial.println(s);
 	if (s <= 8)
 		speed = s;
 }
