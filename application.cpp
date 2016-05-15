@@ -39,7 +39,7 @@
 
 SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			"2.7"
+#define APP_VERSION			"2.8"
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
@@ -47,6 +47,7 @@ bool runAnyway;
 int lastMinute;
 int localActiveProgram;
 bool running;
+bool timeSyncDone;
 
 const TProgmemRGBPalette16 Christmas_p =
 {
@@ -519,15 +520,28 @@ void setup()
     localActiveProgram = NO_PROGRAM;
     runAnyway = false;
     running = false;
+    timeSyncDone = false;
+
     FastLED.clear();
     FastLED.show();
 }
 
+void syncTime()
+{
+	if ((Time.hour() == 1) && !timeSyncDone) {
+		Particle.syncTime();
+	    Time.zone(currentTimeZone());
+	    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+	    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
+	    timeSyncDone = true;
+	}
+	if (Time.hour() != 1)
+		timeSyncDone = false;
+}
+
 void loop()
 {
-    Time.zone(currentTimeZone());
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
+	syncTime();
 
 	switch (programOnDeck()) {
 	case CHRISTMAS:
