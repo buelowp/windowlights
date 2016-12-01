@@ -151,6 +151,8 @@ void Christmas::setFirstActive(int c)
 
 void Christmas::action()
 {
+	vector<int> toerase;
+
 	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
 		switch (it->second) {
 		case GOING_UP:
@@ -169,11 +171,14 @@ void Christmas::action()
 				int pixel = it->first;
 				String gd1(String(__FUNCTION__) + ": Removing pixel " + String(pixel));
 				Serial.println(gd1);
-				pixelMap.erase(pixel);
+				toerase.push_back(pixel);
 			}
 			break;
 		}
 	}
+	for (int i = 0; i < toerase.size(); i++)
+		pixelMap.erase(toerase[i]);
+
 	seeTheRainbow();
 }
 

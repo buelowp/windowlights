@@ -388,9 +388,6 @@ void runDefault()
 
 int programOnDeck()
 {
-	myLocalActiveProgram = INDEPENDENCE;
-	return myLocalActiveProgram;
-/*
 	switch (Time.month()) {
 	case 1:
 		if (Time.day() == 1)
@@ -434,7 +431,6 @@ int programOnDeck()
 		break;
 	}
 	return myLocalActiveProgram;
-*/
 }
 
 void printHeartbeat()
