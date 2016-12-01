@@ -37,17 +37,17 @@
 #include "MeteorShower.h"
 #include "Twinkles.h"
 
-SYSTEM_MODE(AUTOMATIC);
+//SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			"2.8"
+#define APP_VERSION			"2.98"
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
-bool runAnyway;
+bool myRunAnyway;
 int lastMinute;
-int localActiveProgram;
-bool running;
-bool timeSyncDone;
+int myLocalActiveProgram;
+bool myIsRunning;
+bool myTimeSyncDone;
 
 const TProgmemRGBPalette16 Christmas_p =
 {
@@ -166,7 +166,9 @@ bool validNightRunTime()
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
 
-	if (runAnyway)
+	return true;
+
+	if (myRunAnyway)
 		return true;
 
 	if (minsPastMidnight >= (sunset - 30) && (minsPastMidnight < 1380)) {
@@ -182,7 +184,9 @@ bool validFullDayRunTime()
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
 
-	if (runAnyway)
+	return true;
+
+	if (myRunAnyway)
 		return true;
 
 	// It's Christmas, just run them all day
@@ -217,157 +221,157 @@ void runSnow()
 void runChristmas()
 {
 	if ((Time.day() % 2)) {
-		if (validFullDayRunTime() && !running) {
-			running = true;
+		if (validFullDayRunTime() && !myIsRunning) {
+			myIsRunning = true;
 			wink.startup();
 			wink.setFirstActive(20);
 			wink.seeTheRainbow();
 		}
-		if (validFullDayRunTime() && running) {
+		if (validFullDayRunTime() && myIsRunning) {
 			wink.action();
 			if (random(0, 3) == 2)
 				wink.addOne();
 			delay(25);
 		}
-		if (!validFullDayRunTime() && running) {
+		if (!validFullDayRunTime() && myIsRunning) {
 			pixelShutdown();
-			running = false;
+			myIsRunning = false;
 		}
 	}
 	else {
-		if (validFullDayRunTime() && !running) {
-			running = true;
+		if (validFullDayRunTime() && !myIsRunning) {
+			myIsRunning = true;
 			twink.setDensity(8);
 			twink.setSpeed(4);
 		}
-		if (validFullDayRunTime() && running) {
+		if (validFullDayRunTime() && myIsRunning) {
 			twink.action();
 			twink.seeTheRainbow();
 		}
-		if (!validFullDayRunTime() && running) {
+		if (!validFullDayRunTime() && myIsRunning) {
 			pixelShutdown();
-			running = false;
+			myIsRunning = false;
 		}
 	}
 }
 
 void runValentines()
 {
-	if (validNightRunTime() && !running) {
-		running = true;
+	if (validNightRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		vday.setDensity(8);
 		vday.setSpeed(6);
 	}
-	if (validNightRunTime() && running) {
+	if (validNightRunTime() && myIsRunning) {
 		vday.action();
 		vday.seeTheRainbow();
 	}
-	if (!validNightRunTime() && running) {
+	if (!validNightRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runIndependence()
 {
-	if (validNightRunTime() && !running) {
-		running = true;
+	if (validNightRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		iday.startup();
 	}
-	if (validNightRunTime() && running) {
+	if (validNightRunTime() && myIsRunning) {
 		iday.action();
-		delay(500);
+		delay(1000);
 	}
-	if (!validNightRunTime() && running) {
+	if (!validNightRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runHalloween()
 {
-	if (validNightRunTime() && !running) {
-		running = true;
+	if (validNightRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		hday.startup();
 	}
-	if (validNightRunTime() && running) {
+	if (validNightRunTime() && myIsRunning) {
 		hday.action();
 		if (random(0, 50) == 23) {
 			hday.lightning(random(0, NUM_STRIPS));
 		}
 		delay(1000);
 	}
-	if (!validNightRunTime() && running) {
+	if (!validNightRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runThanksgiving()
 {
-	if (validNightRunTime() && !running) {
-		running = true;
+	if (validNightRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		tday.startup();
 	}
-	if (validNightRunTime() && running) {
+	if (validNightRunTime() && myIsRunning) {
 		tday.action();
 		delay(1000);
 	}
-	if (!validNightRunTime() && running) {
+	if (!validNightRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runNorah()
 {
-	if (validFullDayRunTime() && !running) {
-		running = true;
+	if (validFullDayRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		nbday.setDensity(8);
 		nbday.setSpeed(4);
 	}
-	if (validFullDayRunTime() && running) {
+	if (validFullDayRunTime() && myIsRunning) {
 		nbday.action();
 		nbday.seeTheRainbow();
 	}
-	if (!validFullDayRunTime() && running) {
+	if (!validFullDayRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runMaddie()
 {
-	if (validFullDayRunTime() && !running) {
-		running = true;
+	if (validFullDayRunTime() && !myIsRunning) {
+		myIsRunning = true;
 		mbday.setDensity(8);
 		mbday.setSpeed(5);
 	}
-	if (validFullDayRunTime() && running) {
+	if (validFullDayRunTime() && myIsRunning) {
 		mbday.action();
 		mbday.seeTheRainbow();
 	}
-	if (!validFullDayRunTime() && running) {
+	if (!validFullDayRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
 void runMeteorShower()
 {
-	if (validFullDayRunTime() && !running) {
-		running = true;
+	if (validFullDayRunTime() && !myIsRunning) {
+		myIsRunning = true;
 	}
-	if (validFullDayRunTime() && running) {
+	if (validFullDayRunTime() && myIsRunning) {
 		meteorStrip1.action();
 		meteorStrip2.action();
 		meteorStrip3.action();
 		meteorStrip4.action();
 		FastLED.show();
 	}
-	if (!validFullDayRunTime() && running) {
+	if (!validFullDayRunTime() && myIsRunning) {
 		pixelShutdown();
-		running = false;
+		myIsRunning = false;
 	}
 }
 
@@ -384,131 +388,130 @@ void runDefault()
 
 int programOnDeck()
 {
+	myLocalActiveProgram = INDEPENDENCE;
+	return myLocalActiveProgram;
+/*
 	switch (Time.month()) {
 	case 1:
 		if (Time.day() == 1)
-			localActiveProgram = NEW_YEARS;
+			myLocalActiveProgram = NEW_YEARS;
 		break;
 	case 2:
 		if (Time.day() == 14)
-			localActiveProgram = VALENTINES;
+			myLocalActiveProgram = VALENTINES;
 		break;
 	case 4:
 		if (Time.day() == 14)
-			localActiveProgram = NORAH_BDAY;
+			myLocalActiveProgram = NORAH_BDAY;
 		break;
 	case 5:
 		if (Time.day() > 24 && Time.weekday() == 2)
-			localActiveProgram = INDEPENDENCE;
+			myLocalActiveProgram = INDEPENDENCE;
 		break;
 	case 7:
 		if (Time.day() == 4)
-			localActiveProgram = INDEPENDENCE;
+			myLocalActiveProgram = INDEPENDENCE;
 		break;
 	case 9:
 		if (Time.day() == 17)
-			localActiveProgram = MADDIE_BDAY;
+			myLocalActiveProgram = MADDIE_BDAY;
 		if (Time.day() < 8 && Time.weekday() == 2)
-			localActiveProgram = INDEPENDENCE;
+			myLocalActiveProgram = INDEPENDENCE;
 		break;
 	case 10:
 		if (Time.day() > 24)
-			localActiveProgram = HALLOWEEN;
+			myLocalActiveProgram = HALLOWEEN;
 		break;
 	case 11:
 		if (Time.day() > 20)
-			localActiveProgram = THANKSGIVING;
+			myLocalActiveProgram = THANKSGIVING;
 		break;
 	case 12:
 		if (Time.day() < 31)
-			localActiveProgram = CHRISTMAS;
+			myLocalActiveProgram = CHRISTMAS;
 		if (Time.day() == 31)
-			localActiveProgram = NEW_YEARS;
+			myLocalActiveProgram = NEW_YEARS;
 		break;
 	}
-	return localActiveProgram;
+	return myLocalActiveProgram;
+*/
 }
 
 void printHeartbeat()
 {
     if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(localActiveProgram)));
+        Particle.publish("Heartbeat", String("Sys Version: " + System.version() + ", Prog Version: " + APP_VERSION + ", Program: " + String(myLocalActiveProgram)));
         lastMinute = Time.minute();
     }
 
     if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION + ", Curr Program: " + String(localActiveProgram)));
+        Particle.publish("Heartbeat", String("Sys Version: " + System.version() + ", Prog Version: " + APP_VERSION + ", Program: " + String(myLocalActiveProgram)));
         lastMinute = Time.minute();
     }
 }
 
 int setProgram(String prog)
 {
-	runAnyway = true;
+	myRunAnyway = true;
 	if (prog.equalsIgnoreCase("christmas")) {
-		localActiveProgram = CHRISTMAS;
-		return localActiveProgram;
+		myLocalActiveProgram = CHRISTMAS;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("newyears")) {
-		localActiveProgram = NEWYEARS;
-		return localActiveProgram;
+		myLocalActiveProgram = NEWYEARS;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("halloween")) {
-		localActiveProgram = HALLOWEEN;
-		return localActiveProgram;
+		myLocalActiveProgram = HALLOWEEN;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("thanksgiving")) {
-		localActiveProgram = THANKSGIVING;
-		return localActiveProgram;
+		myLocalActiveProgram = THANKSGIVING;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("independence")) {
-		localActiveProgram = INDEPENDENCE;
-		return localActiveProgram;
+		myLocalActiveProgram = INDEPENDENCE;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("maddie")) {
-		localActiveProgram = MADDIE_BDAY;
-		return localActiveProgram;
+		myLocalActiveProgram = MADDIE_BDAY;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("norah")) {
-		localActiveProgram = NORAH_BDAY;
-		return localActiveProgram;
+		myLocalActiveProgram = NORAH_BDAY;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("meteors")) {
-		localActiveProgram = METEOR_SHOWER;
-		return localActiveProgram;
+		myLocalActiveProgram = METEOR_SHOWER;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("valentines")) {
-		localActiveProgram = VALENTINES;
-		return localActiveProgram;
+		myLocalActiveProgram = VALENTINES;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("snow")) {
-		localActiveProgram = SNOW;
-		return localActiveProgram;
+		myLocalActiveProgram = SNOW;
+		return myLocalActiveProgram;
 	}
 	if (prog.equalsIgnoreCase("nye")) {
-		localActiveProgram = NEW_YEARS;
-		return localActiveProgram;
+		myLocalActiveProgram = NEW_YEARS;
+		return myLocalActiveProgram;
 	}
 	pixelShutdown();
-	runAnyway = false;
-	running = false;
-	localActiveProgram = NO_PROGRAM;
+	myRunAnyway = false;
+	myIsRunning = false;
+	myLocalActiveProgram = NO_PROGRAM;
 	return NO_PROGRAM;
 }
 
 void setup()
 {
-	pinMode(D0, OUTPUT);
-	pinMode(1, OUTPUT);
-	pinMode(2, OUTPUT);
-	pinMode(3, OUTPUT);
-
 	waitUntil(WiFi.ready);
 
 	delay(3000);
-	FastLED.addLeds<NEOPIXEL, 3>(strip[0], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, 2>(strip[1], NUM_LEDS);
-	FastLED.addLeds<NEOPIXEL, 1>(strip[2], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
+	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
 
@@ -517,10 +520,12 @@ void setup()
     Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
-    localActiveProgram = NO_PROGRAM;
-    runAnyway = false;
-    running = false;
-    timeSyncDone = false;
+	Particle.syncTime();
+
+    myLocalActiveProgram = NO_PROGRAM;
+    myRunAnyway = false;
+    myIsRunning = false;
+    myTimeSyncDone = false;
 
     FastLED.clear();
     FastLED.show();
@@ -528,15 +533,15 @@ void setup()
 
 void syncTime()
 {
-	if ((Time.hour() == 1) && !timeSyncDone) {
+	if ((Time.hour() == 1) && !myTimeSyncDone) {
 		Particle.syncTime();
 	    Time.zone(currentTimeZone());
 	    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
 	    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
-	    timeSyncDone = true;
+	    myTimeSyncDone = true;
 	}
 	if (Time.hour() != 1)
-		timeSyncDone = false;
+		myTimeSyncDone = false;
 }
 
 void loop()
