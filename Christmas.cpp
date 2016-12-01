@@ -169,15 +169,15 @@ void Christmas::action()
 		case RETURN_TO_NORM:
 			if (scale_pixel_to_normal(it->first)) {
 				int pixel = it->first;
-				String gd1(String(__FUNCTION__) + ": Removing pixel " + String(pixel));
-				Serial.println(gd1);
 				toerase.push_back(pixel);
 			}
 			break;
 		}
 	}
-	for (int i = 0; i < toerase.size(); i++)
+	for (int i = 0; i < toerase.size(); i++) {
 		pixelMap.erase(toerase[i]);
+		Serial.println(String(String(__FUNCTION__) + ": Removing pixel " + String(toerase[i]) + " for size " + pixelMap.size()));
+	}
 
 	seeTheRainbow();
 }

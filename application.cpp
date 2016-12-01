@@ -39,7 +39,7 @@
 
 //SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			"2.98"
+#define APP_VERSION			"3.0"
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
@@ -138,27 +138,31 @@ MeteorShower meteorStrip4;
 const uint8_t _usDSTStart[22] = { 8,13,12,11,10, 8,14,13,12,10, 9, 8,14,12,11,10, 9,14,13,12,11, 9};
 const uint8_t _usDSTEnd[22]   = { 1, 6, 5, 4, 3, 1, 7, 6, 5, 3, 2, 1, 7, 5, 4, 3, 2, 7, 6, 5, 4, 2};
 
-STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
+STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
 
 int currentTimeZone()
 {
+	int offset = CST_OFFSET;
+
     if (Time.month() > 3 && Time.month() < 11) {
-        return DST_OFFSET;
+        offset = DST_OFFSET;
     }
-    if (Time.month() == 3) {
+    else if (Time.month() == 3) {
         if ((Time.day() == _usDSTStart[Time.year() -  TIME_BASE_YEAR]) && Time.hour() >= 2)
-            return DST_OFFSET;
-        if (Time.day() > _usDSTStart[Time.year() -  TIME_BASE_YEAR])
-            return DST_OFFSET;
+            offset = DST_OFFSET;
+        else if (Time.day() > _usDSTStart[Time.year() -  TIME_BASE_YEAR])
+            offset = DST_OFFSET;
     }
-    if (Time.month() == 11) {
+    else if (Time.month() == 11) {
         if ((Time.day() == _usDSTEnd[Time.year() -  TIME_BASE_YEAR]) && Time.hour() <=2)
-            return DST_OFFSET;
-        if (Time.day() > _usDSTEnd[Time.year() -  TIME_BASE_YEAR])
-            return CST_OFFSET;
+            offset = DST_OFFSET;
+        else if (Time.day() > _usDSTEnd[Time.year() -  TIME_BASE_YEAR])
+            offset = CST_OFFSET;
     }
 
-    return CST_OFFSET;
+    String debug(String(__FUNCTION__) + ": Current timezone is " + offset);
+    Serial.println(debug);
+    return offset;
 }
 
 bool validNightRunTime()
@@ -183,8 +187,6 @@ bool validFullDayRunTime()
 	double sunrise = sun.calcSunrise();
 	double sunset = sun.calcSunset();
 	double minsPastMidnight = Time.hour() * 60 + Time.minute();
-
-	return true;
 
 	if (myRunAnyway)
 		return true;
@@ -220,7 +222,7 @@ void runSnow()
 
 void runChristmas()
 {
-	if ((Time.day() % 2)) {
+	if (!(Time.day() % 2)) {
 		if (validFullDayRunTime() && !myIsRunning) {
 			myIsRunning = true;
 			wink.startup();
@@ -388,6 +390,10 @@ void runDefault()
 
 int programOnDeck()
 {
+	myLocalActiveProgram = 0;
+
+	return CHRISTMAS;
+
 	switch (Time.month()) {
 	case 1:
 		if (Time.day() == 1)
@@ -517,12 +523,17 @@ void setup()
 	Particle.function("program", setProgram);
 
 	Particle.syncTime();
+    Time.zone(currentTimeZone());
+    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
 
     myLocalActiveProgram = NO_PROGRAM;
     myRunAnyway = false;
     myIsRunning = false;
     myTimeSyncDone = false;
 
+    String debug(String(__FUNCTION__) + ": Current Date is " + Time.timeStr());
+    Serial.println(debug);
     FastLED.clear();
     FastLED.show();
 }
