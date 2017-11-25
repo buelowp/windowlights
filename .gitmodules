@@ -1,6 +1,0 @@
-[submodule "sunset"]
-	path = sunset
-	url = git@github.com:buelowp/sunset.git
-[submodule "FastLED-Sparkcore"]
-	path = FastLED-Sparkcore
-	url = https://github.com/focalintent/FastLED-Sparkcore
