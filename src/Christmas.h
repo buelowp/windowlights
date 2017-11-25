@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,36 +24,37 @@
 #ifndef __CHRISTMAS_H__
 #define __CHRISTMAS_H__
 
-#include "FastLED-Sparkcore/firmware/FastLED.h"
-#include "WindowLights.h"
-
 #define GOING_UP        0
 #define GOING_DOWN      1
 #define RETURN_TO_NORM  2
 #define NUM_XMAS_COLORS	7
 
-using namespace NSFastLED;
-using namespace std;
+#include <FastLED.h>
+#include <map>
+#include <vector>
+#include "WindowLights.h"
+
+FASTLED_USING_NAMESPACE
 
 class Christmas {
 public:
   Christmas(int, int);
   ~Christmas();
-  
+
   void startup();
   void action();
   void setFirstActive(int);
   void addOne();
   void seeTheRainbow();
   CHSV getNextPixel();
-  
+
 private:
   bool scale_pixel_up(int i);
   bool scale_pixel_down(int i);
   bool scale_pixel_to_normal(int i);
   void set_new_pixel_color(int i);
-  
-  vector<CHSV> pixels;
+
+  std::vector<CHSV> pixels;
   std::map<int, int> pixelMap;
   int totalPixels;
   int numActive;
@@ -62,4 +63,3 @@ private:
 };
 
 #endif
-

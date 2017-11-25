@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,8 @@
 #define SCALE_VAL       1
 #define SCALE_SAT       2
 #define SCALE_VAL_NORM  1
+
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 
 static HSVHue ChristmasColorWheel[] = {
 		HUE_RED,
@@ -53,17 +55,17 @@ bool Christmas::scale_pixel_up(int i)
 	CHSV pixel = pixels[i];
   if (pixel.v == 255 && pixel.s == 0)
     return true;
-    
+
   if ((pixel.v + SCALE_VAL) >= 255)
     pixel.v = 255;
   else
     pixel.v += SCALE_VAL;
-    
+
   if ((pixel.s - SCALE_SAT) <= 0)
     pixel.s = 0;
   else
     pixel.s -= SCALE_SAT;
-    
+
   pixels[i] = pixel;
   return false;
 }
@@ -73,17 +75,17 @@ bool Christmas::scale_pixel_down(int i)
 	CHSV pixel = pixels[i];
   if (pixel.v == 0 && pixel.s == 255)
     return true;
-    
+
   if ((pixel.v - 4) <= 0)
     pixel.v = 0;
   else
     pixel.v -= 4;
-    
+
   if ((pixel.s + 4) >= 255)
     pixel.s = 255;
   else
     pixel.s += 4;
-    
+
   pixels[i] = pixel;
   return false;
 }
@@ -97,9 +99,9 @@ bool Christmas::scale_pixel_to_normal(int i)
 		Serial.println(dbg);
 		return true;
 	}
-  
+
 	pixel.v += SCALE_VAL_NORM;
-  
+
 	pixels[i] = pixel;
 	return false;
 }
@@ -133,7 +135,7 @@ void Christmas::setFirstActive(int c)
 {
 	int count = 0;
 	std::pair<std::map<int,int>::iterator,bool> ret;
-  
+
 	while (count < c) {
 		int pixel = random(0, NUM_LEDS);
 		ret = pixelMap.insert(std::pair<int,int>(pixel, GOING_UP));
@@ -151,7 +153,7 @@ void Christmas::setFirstActive(int c)
 
 void Christmas::action()
 {
-	vector<int> toerase;
+	std::vector<int> toerase;
 
 	for (auto it = pixelMap.begin(); it != pixelMap.end(); ++it) {
 		switch (it->second) {
@@ -211,5 +213,3 @@ void Christmas::seeTheRainbow()
 	}
 	FastLED.show();
 }
-
-

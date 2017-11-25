@@ -7,6 +7,8 @@
 
 #include "Twinkles.h"
 
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
+
 Twinkles::Twinkles(CRGBPalette16 pal)
 {
 	gCurrentPalette = pal;

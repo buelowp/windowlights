@@ -7,6 +7,8 @@
 
 #include "MeteorShower.h"
 
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
+
 MeteorShower::MeteorShower()
 {
 }

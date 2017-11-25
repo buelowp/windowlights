@@ -8,7 +8,10 @@
 #ifndef USER_APPLICATIONS_WINDOWLIGHTS_METEORSHOWER_H_
 #define USER_APPLICATIONS_WINDOWLIGHTS_METEORSHOWER_H_
 
+#include <FastLED.h>
 #include "WindowLights.h"
+
+FASTLED_USING_NAMESPACE
 
 class MeteorShower {
 public:

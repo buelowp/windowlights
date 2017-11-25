@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,27 +24,25 @@
 #ifndef __VALENTINES_H__
 #define __VALENTINES_H__
 
-#include "FastLED-Sparkcore/firmware/FastLED.h"
+#include <FastLED.h>
+#include <vector>
 #include "WindowLights.h"
 
-using namespace std;
-using namespace NSFastLED;
+FASTLED_USING_NAMESPACE
 
 class Valentines {
 public:
   Valentines(int);
   ~Valentines();
-  
+
   void seeTheRainbow();
   void startup();
   void action();
-  
+
 private:
-  vector<CRGB> pixels;
+  std::vector<CRGB> pixels;
   int totalPixels;
   int which;
 };
 
 #endif
-
-

@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,9 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *THE SOFTWARE.
 **/
-#include "application.h"
-#include "FastLED-Sparkcore/firmware/FastLED.h"
-#include "sunset/firmware/SunSet.h"
+#include <FastLED.h>
+#include <SunSet.h>
+
+FASTLED_USING_NAMESPACE
+
 #include "WindowLights.h"
 
 #include "Christmas.h"
@@ -31,7 +33,6 @@
 #include "Valentines.h"
 #include "IndependenceDay.h"
 #include "Thanksgiving.h"
-#include "SunPosition.h"
 #include "Norah.h"
 #include "Maddie.h"
 #include "MeteorShower.h"
@@ -39,7 +40,7 @@
 
 //SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			"3.0"
+#define APP_VERSION			1
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
@@ -48,6 +49,9 @@ int lastMinute;
 int myLocalActiveProgram;
 bool myIsRunning;
 bool myTimeSyncDone;
+
+int g_appid;
+int g_offset;
 
 const TProgmemRGBPalette16 Christmas_p =
 {
@@ -142,27 +146,35 @@ STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
 
 int currentTimeZone()
 {
-	int offset = CST_OFFSET;
+    g_offset = CST_OFFSET;
+    Time.endDST();
 
     if (Time.month() > 3 && Time.month() < 11) {
-        offset = DST_OFFSET;
+        Time.beginDST();
+        g_offset = DST_OFFSET;
     }
     else if (Time.month() == 3) {
-        if ((Time.day() == _usDSTStart[Time.year() -  TIME_BASE_YEAR]) && Time.hour() >= 2)
-            offset = DST_OFFSET;
-        else if (Time.day() > _usDSTStart[Time.year() -  TIME_BASE_YEAR])
-            offset = DST_OFFSET;
+        if ((Time.day() == _usDSTStart[Time.year() -  TIME_BASE_YEAR]) && Time.hour() >= 2) {
+            Time.beginDST();
+            g_offset = DST_OFFSET;
+        }
+        else if (Time.day() > _usDSTStart[Time.year() -  TIME_BASE_YEAR]) {
+            Time.beginDST();
+            g_offset = DST_OFFSET;
+        }
     }
     else if (Time.month() == 11) {
-        if ((Time.day() == _usDSTEnd[Time.year() -  TIME_BASE_YEAR]) && Time.hour() <=2)
-            offset = DST_OFFSET;
-        else if (Time.day() > _usDSTEnd[Time.year() -  TIME_BASE_YEAR])
-            offset = CST_OFFSET;
+        if ((Time.day() == _usDSTEnd[Time.year() -  TIME_BASE_YEAR]) && Time.hour() <=2) {
+            Time.beginDST();
+            g_offset = DST_OFFSET;
+        }
+        else if (Time.day() > _usDSTEnd[Time.year() -  TIME_BASE_YEAR]) {
+            Time.endDST();
+            g_offset = CST_OFFSET;
+        }
     }
 
-    String debug(String(__FUNCTION__) + ": Current timezone is " + offset);
-    Serial.println(debug);
-    return offset;
+    return g_offset;
 }
 
 bool validNightRunTime()
@@ -439,19 +451,6 @@ int programOnDeck()
 	return myLocalActiveProgram;
 }
 
-void printHeartbeat()
-{
-    if (lastMinute == 59 && Time.minute() >= 0) {
-        Particle.publish("Heartbeat", String("Sys Version: " + System.version() + ", Prog Version: " + APP_VERSION + ", Program: " + String(myLocalActiveProgram)));
-        lastMinute = Time.minute();
-    }
-
-    if (Time.minute() >= lastMinute + 1) {
-        Particle.publish("Heartbeat", String("Sys Version: " + System.version() + ", Prog Version: " + APP_VERSION + ", Program: " + String(myLocalActiveProgram)));
-        lastMinute = Time.minute();
-    }
-}
-
 int setProgram(String prog)
 {
 	myRunAnyway = true;
@@ -519,7 +518,6 @@ void setup()
 
 	Serial.begin(115200);
     lastMinute = Time.minute();
-    Particle.publish("Startup", String("System Version: " + System.version() + ", Program Version: " + APP_VERSION));
 	Particle.function("program", setProgram);
 
 	Particle.syncTime();
@@ -536,24 +534,25 @@ void setup()
     Serial.println(debug);
     FastLED.clear();
     FastLED.show();
-}
 
-void syncTime()
-{
-	if ((Time.hour() == 1) && !myTimeSyncDone) {
-		Particle.syncTime();
-	    Time.zone(currentTimeZone());
-	    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-	    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
-	    myTimeSyncDone = true;
-	}
-	if (Time.hour() != 1)
-		myTimeSyncDone = false;
+	g_appid = APP_VERSION;
+
+	Particle.variable("appid", g_appid);
+	Particle.variable("program", myLocalActiveProgram);
+	Particle.variable("tz", g_offset);
 }
 
 void loop()
 {
-	syncTime();
+	EVERY_N_MILLISECONDS(SIX_HOURS) {
+		Particle.syncTime();
+	}
+
+	EVERY_N_MILLISECONDS(ONE_HOUR) {
+		Time.zone(currentTimeZone());
+		sun.setCurrentDate(Time.year(), Time.month(), Time.day());
+		sun.setTZOffset(currentTimeZone());
+	}
 
 	switch (programOnDeck()) {
 	case CHRISTMAS:
@@ -587,6 +586,4 @@ void loop()
 		runNYE();
 		break;
 	}
-    printHeartbeat();
 }
-

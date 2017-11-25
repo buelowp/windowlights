@@ -7,6 +7,8 @@
 
 #include "Maddie.h"
 
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
+
 static CRGB MaddieColorWheel[] = {
 		CRGB::Aqua,
 		CRGB::Indigo,
@@ -63,4 +65,3 @@ void Maddie::seeTheRainbow()
   FastLED.setBrightness(100);
   FastLED.show();
 }
-

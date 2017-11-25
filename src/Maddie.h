@@ -8,7 +8,11 @@
 #ifndef USER_APPLICATIONS_WINDOWLIGHTS_MADDIE_H_
 #define USER_APPLICATIONS_WINDOWLIGHTS_MADDIE_H_
 
+#include <FastLED.h>
+#include <vector>
 #include "WindowLights.h"
+
+FASTLED_USING_NAMESPACE
 
 class Maddie {
 public:

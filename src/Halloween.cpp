@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,8 @@
 #include "Halloween.h"
 
 #define FLASHES 15
+
+extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 
 static CRGB HalloweenColorWheel[] = {
 	CRGB::Red,
@@ -57,7 +59,7 @@ void Halloween::startup()
       strip[i][j] = c;
     }
   }
-  
+
   seeTheRainbow();
 }
 
@@ -87,10 +89,10 @@ void Halloween::lightning(int window)
     }
     hsv2rgb_rainbow(flasher, strip[window], NUM_LEDS);
     FastLED.show();
-    
+
     if (flashCounter == 0)
       delay (150); // longer delay until next flash after the leader
-  
+
     delay(50+random(100)); // shorter delay between strokes
   }
 }
@@ -99,7 +101,7 @@ void Halloween::action()
 {
   int window = random(0, 3);
   CRGB c = HalloweenColorWheel[random(0, 5)];
-  
+
   for (int j = 0; j < LEDS_PER_STRIP; j++) {
     strip[window][j] = c;
   }
@@ -111,4 +113,3 @@ void Halloween::seeTheRainbow()
 	FastLED.setBrightness(100);
 	FastLED.show();
 }
-

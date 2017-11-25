@@ -1,10 +1,6 @@
 #ifndef __LIGHTSTYPES_H__
 #define __LIGHTSTYPES_H__
 
-#include <vector>
-#include <map>
-#include "FastLED-Sparkcore/firmware/FastLED.h"
-
 #define SWITCH_PIN     D4
 #define LED_STRIP_1    D0
 #define LED_STRIP_2    D1
@@ -32,6 +28,8 @@
 #define NEW_YEARS			111
 #define NO_PROGRAM      	999
 
+#define ONE_HOUR            (1000 * 60 * 60 * 1)
+#define SIX_HOURS           (1000 * 60 * 60 * 6)
 
 // Background color for 'unlit' pixels
 // Can be set to CRGB::Black if desired.
@@ -42,9 +40,5 @@
 
 #define LATITUDE        	42.058102
 #define LONGITUDE       	87.984189
-
-using namespace NSFastLED;
-
-extern CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 
 #endif
