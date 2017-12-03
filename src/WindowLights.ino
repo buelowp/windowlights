@@ -40,18 +40,19 @@ FASTLED_USING_NAMESPACE
 
 //SYSTEM_MODE(AUTOMATIC);
 
-#define APP_VERSION			1
+#define APP_VERSION			15
 
 CRGB strip[NUM_STRIPS][LEDS_PER_STRIP];
 SunSet sun;
 bool myRunAnyway;
-int lastMinute;
-int myLocalActiveProgram;
 bool myIsRunning;
 bool myTimeSyncDone;
 
 int g_appid;
 int g_offset;
+int g_month;
+int g_day;
+int g_activeProgram;
 
 const TProgmemRGBPalette16 Christmas_p =
 {
@@ -402,148 +403,138 @@ void runDefault()
 
 int programOnDeck()
 {
-	myLocalActiveProgram = 0;
-
-	return CHRISTMAS;
+	g_activeProgram = NO_PROGRAM;
 
 	switch (Time.month()) {
 	case 1:
 		if (Time.day() == 1)
-			myLocalActiveProgram = NEW_YEARS;
+			g_activeProgram = NEW_YEARS;
 		break;
 	case 2:
 		if (Time.day() == 14)
-			myLocalActiveProgram = VALENTINES;
+			g_activeProgram = VALENTINES;
 		break;
 	case 4:
 		if (Time.day() == 14)
-			myLocalActiveProgram = NORAH_BDAY;
+			g_activeProgram = NORAH_BDAY;
 		break;
 	case 5:
 		if (Time.day() > 24 && Time.weekday() == 2)
-			myLocalActiveProgram = INDEPENDENCE;
+			g_activeProgram = INDEPENDENCE;
 		break;
 	case 7:
 		if (Time.day() == 4)
-			myLocalActiveProgram = INDEPENDENCE;
+			g_activeProgram = INDEPENDENCE;
 		break;
 	case 9:
 		if (Time.day() == 17)
-			myLocalActiveProgram = MADDIE_BDAY;
+			g_activeProgram = MADDIE_BDAY;
 		if (Time.day() < 8 && Time.weekday() == 2)
-			myLocalActiveProgram = INDEPENDENCE;
+			g_activeProgram = INDEPENDENCE;
 		break;
 	case 10:
 		if (Time.day() > 24)
-			myLocalActiveProgram = HALLOWEEN;
+			g_activeProgram = HALLOWEEN;
 		break;
 	case 11:
 		if (Time.day() > 20)
-			myLocalActiveProgram = THANKSGIVING;
+			g_activeProgram = THANKSGIVING;
 		break;
 	case 12:
 		if (Time.day() < 31)
-			myLocalActiveProgram = CHRISTMAS;
+			g_activeProgram = CHRISTMAS;
 		if (Time.day() == 31)
-			myLocalActiveProgram = NEW_YEARS;
+			g_activeProgram = NEW_YEARS;
 		break;
 	}
-	return myLocalActiveProgram;
+	return g_activeProgram;
 }
 
 int setProgram(String prog)
 {
 	myRunAnyway = true;
 	if (prog.equalsIgnoreCase("christmas")) {
-		myLocalActiveProgram = CHRISTMAS;
-		return myLocalActiveProgram;
+		g_activeProgram = CHRISTMAS;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("newyears")) {
-		myLocalActiveProgram = NEWYEARS;
-		return myLocalActiveProgram;
+		g_activeProgram = NEWYEARS;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("halloween")) {
-		myLocalActiveProgram = HALLOWEEN;
-		return myLocalActiveProgram;
+		g_activeProgram = HALLOWEEN;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("thanksgiving")) {
-		myLocalActiveProgram = THANKSGIVING;
-		return myLocalActiveProgram;
+		g_activeProgram = THANKSGIVING;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("independence")) {
-		myLocalActiveProgram = INDEPENDENCE;
-		return myLocalActiveProgram;
+		g_activeProgram = INDEPENDENCE;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("maddie")) {
-		myLocalActiveProgram = MADDIE_BDAY;
-		return myLocalActiveProgram;
+		g_activeProgram = MADDIE_BDAY;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("norah")) {
-		myLocalActiveProgram = NORAH_BDAY;
-		return myLocalActiveProgram;
+		g_activeProgram = NORAH_BDAY;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("meteors")) {
-		myLocalActiveProgram = METEOR_SHOWER;
-		return myLocalActiveProgram;
+		g_activeProgram = METEOR_SHOWER;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("valentines")) {
-		myLocalActiveProgram = VALENTINES;
-		return myLocalActiveProgram;
+		g_activeProgram = VALENTINES;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("snow")) {
-		myLocalActiveProgram = SNOW;
-		return myLocalActiveProgram;
+		g_activeProgram = SNOW;
+		return g_activeProgram;
 	}
 	if (prog.equalsIgnoreCase("nye")) {
-		myLocalActiveProgram = NEW_YEARS;
-		return myLocalActiveProgram;
+		g_activeProgram = NEW_YEARS;
+		return g_activeProgram;
 	}
 	pixelShutdown();
 	myRunAnyway = false;
 	myIsRunning = false;
-	myLocalActiveProgram = NO_PROGRAM;
+	g_activeProgram = NO_PROGRAM;
 	return NO_PROGRAM;
 }
 
 void setup()
 {
-	waitUntil(WiFi.ready);
-
 	delay(3000);
 	FastLED.addLeds<NEOPIXEL, D3>(strip[0], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D2>(strip[1], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D1>(strip[2], NUM_LEDS);
 	FastLED.addLeds<NEOPIXEL, D0>(strip[3], NUM_LEDS);
 	randomSeed(analogRead(A0));
+	sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
+	sun.setCurrentDate(Time.year(), Time.month(), Time.day());
+	Time.zone(currentTimeZone());
 
-	Serial.begin(115200);
-    lastMinute = Time.minute();
-	Particle.function("program", setProgram);
-
-	Particle.syncTime();
-    Time.zone(currentTimeZone());
-    sun.setPosition(LATITUDE, LONGITUDE, currentTimeZone());
-    sun.setCurrentDate(Time.year(), Time.month(), Time.day());
-
-    myLocalActiveProgram = NO_PROGRAM;
+	g_activeProgram = NO_PROGRAM;
     myRunAnyway = false;
-    myIsRunning = false;
-    myTimeSyncDone = false;
+	g_month = Time.month();
+	g_day = Time.day();
+	programOnDeck();
 
-    String debug(String(__FUNCTION__) + ": Current Date is " + Time.timeStr());
-    Serial.println(debug);
-    FastLED.clear();
-    FastLED.show();
-
+	Particle.function("program", setProgram);
 	g_appid = APP_VERSION;
 
 	Particle.variable("appid", g_appid);
-	Particle.variable("program", myLocalActiveProgram);
 	Particle.variable("tz", g_offset);
+	Particle.variable("currprog", g_activeProgram);
+	Particle.variable("month", g_month);
+	Particle.variable("day", g_day);
 }
 
 void loop()
 {
+
 	EVERY_N_MILLISECONDS(SIX_HOURS) {
 		Particle.syncTime();
 	}
@@ -552,9 +543,10 @@ void loop()
 		Time.zone(currentTimeZone());
 		sun.setCurrentDate(Time.year(), Time.month(), Time.day());
 		sun.setTZOffset(currentTimeZone());
+		programOnDeck();
 	}
 
-	switch (programOnDeck()) {
+	switch (g_activeProgram) {
 	case CHRISTMAS:
 		runChristmas();
 		break;
@@ -584,6 +576,8 @@ void loop()
 		break;
 	case NEW_YEARS:
 		runNYE();
+		break;
+	case NO_PROGRAM:
 		break;
 	}
 }
